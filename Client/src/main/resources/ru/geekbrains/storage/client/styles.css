@@ -1,0 +1,14 @@
+.list-cell:odd {
+    -fx-background-color: rgba(232, 183, 20, 0.48);
+
+}
+.list-cell{
+    -fx-text-fill: #383636;
+    -fx-font-family: monospace;
+}
+.list-cell:selected{
+    -fx-background-color: rgba(232, 183, 20, 0.75);
+}
+.button {
+    -fx-background-color: rgba(134, 134, 222, 0.81);
+}
