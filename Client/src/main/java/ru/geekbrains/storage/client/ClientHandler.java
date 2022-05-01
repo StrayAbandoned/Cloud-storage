@@ -4,6 +4,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import ru.geekbrains.storage.*;
 
+import java.nio.file.Path;
+
 
 public class ClientHandler extends ChannelInboundHandlerAdapter{
     Network network;
@@ -20,24 +22,37 @@ public class ClientHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         BasicResponse response = (BasicResponse) msg;
-        if(response.getType().equals(ResponseType.REG_OK)||response.getType().equals(ResponseType.REG_NO)){
-            if(response.getType().equals(ResponseType.REG_OK)){
+        System.out.println(response.getType());
+        if(response instanceof RegResponse){
+            if(response.getType() == ResponseType.REG_OK){
                 ClientService.getRegController().regInfo("Registration successful!");
 
             } else {
                 ClientService.getRegController().regInfo("Registration failed!");
-            };
-
+            }
         }
-        if(response.getType().equals(ResponseType.AUTH_OK)||response.getType().equals(ResponseType.AUTH_NO)){
-            if(response.getType().equals(ResponseType.AUTH_OK)){
+        if(response instanceof AuthResponse){
+            if(response.getType() == ResponseType.AUTH_OK){
                 ClientService.getMainController().setAuthenticated(true);
+                ctx.writeAndFlush(new PathRequest());
+     //           ctx.writeAndFlush(new GetFilesRequest());
             } else {
                 ClientService.getMainController().setAuthenticated(false);
                 ClientService.getMainController().failAuth("Wrong login/password");
+            }
 
-            };
+        }
+        if(response instanceof PathResponse){
+            ClientService.setPath(((PathResponse) response).getPath());
+            ctx.writeAndFlush(new GetFilesRequest(ClientService.getPath()));
+        }
 
+        if(response instanceof GetFilesResponse){
+            ClientService.getMainController().showRemoteFiles(((GetFilesResponse) response).getFiles(), Path.of(((GetFilesResponse) response).getPath()));
+        }
+
+        if (response instanceof UploadResponse){
+            ctx.writeAndFlush(new GetFilesRequest(ClientService.getPath()));
         }
     }
 

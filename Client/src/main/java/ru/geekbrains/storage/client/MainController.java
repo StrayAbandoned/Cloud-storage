@@ -14,10 +14,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
-import ru.geekbrains.storage.AuthRequest;
-import ru.geekbrains.storage.RegRequest;
+import ru.geekbrains.storage.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,14 +33,16 @@ import java.util.stream.Collectors;
 public class MainController implements Initializable {
     private final Path start = Paths.get(System.getProperty("user.dir"));
 
-    private Path root;
+
+
+    private Path root, remoteRoot;
     private RegController regController;
 
     private boolean isAuthenticated;
     private RegRequest authData;
     private Network network;
     private Stage stage, regStage;
-    private List<FileInfo> files;
+    private List<FileInfo> files,remFiles;
 
     @FXML
     private Button uploadbtn, downloadbtn;
@@ -62,6 +66,12 @@ public class MainController implements Initializable {
     private VBox clientside;
     @FXML
     private VBox serverside;
+    @FXML
+    private ContextMenu context = new ContextMenu();
+    @FXML
+    private MenuItem copy;
+    @FXML
+    private MenuItem delete;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -72,29 +82,9 @@ public class MainController implements Initializable {
             stage = (Stage) btnreg.getScene().getWindow();
             files = showFiles(start);
             localfiles.getItems().addAll(files);
-            localfiles.setCellFactory(new Callback<ListView<FileInfo>, ListCell<FileInfo>>() {
-                @Override
-                public ListCell<FileInfo> call(ListView<FileInfo> fileInfoListView) {
-                    return new ListCell<FileInfo>() {
-                        @Override
-                        protected void updateItem(FileInfo item, boolean empty) {
-                            super.updateItem(item, empty);
-                            if (item == null || empty) {
-                                setText(null);
-                            } else {
-                                String fileName = String.format("%-20s", item.getFileName());
-                                String fileSize = String.format("%10s bytes", item.getFileSize());
-                                if (item.getFileSize() == -1L || item.getFileSize() == -2L) {
-                                    fileSize = " ";
-                                }
-                                String text = String.format("%s|%s", fileName, fileSize);
-                                setText(text);
-                            }
-                        }
-                    };
-                }
-            });
+            localfiles.setCellFactory(x -> new FileListCell());
             goToDirectory(start);
+
             stage.setOnCloseRequest(windowEvent -> {
                 Platform.exit();
                 network.close();
@@ -103,13 +93,6 @@ public class MainController implements Initializable {
         setAuthenticated(false);
     }
 
-    public void sendFile(ActionEvent actionEvent) {
-
-    }
-
-    public void getFile(ActionEvent actionEvent) {
-
-    }
 
     //Блок, связанный с регистрацией
 
@@ -170,7 +153,6 @@ public class MainController implements Initializable {
         clientside.setManaged(isAuthenticated);
         serverside.setVisible(isAuthenticated);
         serverside.setManaged(isAuthenticated);
-
     }
 
     public void failAuth(String s) {
@@ -213,10 +195,31 @@ public class MainController implements Initializable {
             }
         });
     }
+    public void goToRemoteDirectory(Path path) {
+        remoteRoot = path;
+     //   ClientService.setPath(String.valueOf(path));
+        remotepath.setText(path.toAbsolutePath().toString());
+        remotefiles.getItems().clear();
+        remotefiles.getItems().add(new FileInfo(FileInfo.back, -2L));
+        remotefiles.getItems().addAll(showFiles(remoteRoot));
+        remotefiles.getItems().sort((o1, o2) -> {
+            if (o1.getFileSize() == -2L) return -1;
+            if ((int) Math.signum(o1.getFileSize()) == (int) Math.signum(o2.getFileSize())) {
+                return o1.getFileName().compareTo(o2.getFileName());
+            }
+            return (int) (o1.getFileSize() - o2.getFileSize());
+        });
+    }
 
     public void filesClicked(MouseEvent mouseEvent) {
+        FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
+
+//        copy.setOnAction(actionEvent -> fileInfo.copyItem());
+//        delete.setOnAction(actionEvent -> fileInfo.deleteItem());
+//        localfiles.setContextMenu(context);
+
         if (mouseEvent.getClickCount() == 2) {
-            FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
+
             if (fileInfo != null) {
                 if (fileInfo.isDirectory()) {
                     Path pathTo = root.resolve(fileInfo.getFileName());
@@ -226,6 +229,71 @@ public class MainController implements Initializable {
                     if (root.getParent() != null) {
                         Path pathTo = root.getParent();
                         goToDirectory(pathTo);
+                    }
+
+                }
+            }
+        }
+    }
+
+    public void showRemoteFiles(List<FileInfo> remFiles, Path path){
+        this.remoteRoot = path;
+        this.remFiles = remFiles;
+        remotefiles.getItems().addAll(remFiles);
+        remotefiles.setCellFactory(x -> new FileListCell());
+        goToRemoteDirectory(path);
+    }
+
+
+    public void copy(ActionEvent actionEvent) {
+    }
+
+    public void delete(ActionEvent actionEvent) {
+    }
+
+    public void sendFile(ActionEvent actionEvent) throws FileNotFoundException {
+        FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
+        if(fileinfo!=null&&!fileinfo.isDirectory()){
+            File file = new File(String.valueOf(root),fileinfo.getFileName());
+            network.sendFiles(new UploadRequest(file));
+        }
+
+    }
+
+    public void getFile(ActionEvent actionEvent) {
+    }
+
+    public void filesClickedRemote(MouseEvent mouseEvent) {
+        FileInfo fileInfo = remotefiles.getSelectionModel().getSelectedItem();
+
+//        copy.setOnAction(actionEvent -> fileInfo.copyItem());
+//        delete.setOnAction(actionEvent -> fileInfo.deleteItem());
+//        localfiles.setContextMenu(context);
+
+        if (mouseEvent.getClickCount() == 2) {
+//            if (fileInfo != null) {
+//                if (fileInfo.isDirectory()) {
+//                    ClientService.setPath(String.valueOf(remoteRoot.resolve(fileInfo.getFileName())));
+//                    network.sendFiles(new GetFilesRequest(ClientService.getPath()));
+//                }
+//                if (fileInfo.isBack()) {
+//                    if (remoteRoot.getParent() != null && remoteRoot.getNameCount()>4) {
+//                        ClientService.setPath(String.valueOf(remoteRoot.getParent()));
+//                        network.sendFiles(new GetFilesRequest(ClientService.getPath()));
+//                    }
+//
+//                }
+//            }
+
+            if (fileInfo != null) {
+                if (fileInfo.isDirectory()) {
+                    Path pathTo = remoteRoot.resolve(fileInfo.getFileName());
+                    goToRemoteDirectory(pathTo);
+                }
+                if (fileInfo.isBack()) {
+                    if (remoteRoot.getParent() != null && remoteRoot.getNameCount()>5) {
+                        Path pathTo = remoteRoot.getParent();
+                        goToRemoteDirectory(pathTo);
                     }
 
                 }

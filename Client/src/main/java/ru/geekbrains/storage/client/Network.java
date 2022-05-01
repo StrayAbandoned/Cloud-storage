@@ -24,38 +24,31 @@ public class Network {
     public Network(){
         ClientService.setNetwork(network);
 
-        new Thread(new Runnable() {
+        new Thread(() -> {
+            EventLoopGroup workerGroup = new NioEventLoopGroup();
 
+            try {
+                Bootstrap boot = new Bootstrap();
+                boot.group(workerGroup)
+                        .channel(NioSocketChannel.class)
+                        .handler(new ChannelInitializer<SocketChannel>() {
 
-
-            @Override
-            public void run() {
-                EventLoopGroup workerGroup = new NioEventLoopGroup();
-
-                try {
-                    Bootstrap boot = new Bootstrap();
-                    boot.group(workerGroup)
-                            .channel(NioSocketChannel.class)
-                            .handler(new ChannelInitializer<SocketChannel>() {
-
-                                @Override
-                                protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                    //channel = socketChannel;
-                                    socketChannel.pipeline().addLast(
-                                            new ObjectDecoder(FILE_SIZE, ClassResolvers.weakCachingResolver(Network.class.getClassLoader())),
-                                            new ObjectEncoder(),
-                                            new ClientHandler(network));
-                                }
-                            });
-                    ChannelFuture future = boot.connect(HOSTNAME,PORT);
-                    channel = future.channel();
-                    future.channel().closeFuture().sync();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                finally {
-                    workerGroup.shutdownGracefully();
-                }
+                            @Override
+                            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                                //channel = socketChannel;
+                                socketChannel.pipeline().addLast(
+                                        new ObjectDecoder(FILE_SIZE, ClassResolvers.weakCachingResolver(Network.class.getClassLoader())),
+                                        new ObjectEncoder(),
+                                        new ClientHandler(network));
+                            }
+                        });
+                ChannelFuture future = boot.connect(HOSTNAME,PORT);
+                channel = future.channel();
+                future.channel().closeFuture().sync();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                workerGroup.shutdownGracefully();
             }
         }).start();
     }

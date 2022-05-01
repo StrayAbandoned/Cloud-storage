@@ -10,12 +10,20 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import ru.geekbrains.storage.BasicRequest;
+import ru.geekbrains.storage.FileInfo;
+import ru.geekbrains.storage.UploadRequest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class Server {
     private final static int PORT = 26894;
@@ -25,6 +33,7 @@ public class Server {
     private LogManager logManager = LogManager.getLogManager();
     private static Logger logger = Logger.getLogger(Server.class.getName());
     private Server ser = this;
+    Path path;
 
     public Server getSer() {
         return ser;
@@ -77,4 +86,22 @@ public class Server {
     public static Logger getLogger() {
        return logger;
     }
+
+    public List<FileInfo> showFiles(Path rootPath) {
+        List<FileInfo> out = new CopyOnWriteArrayList<>();
+        try {
+            List<Path> paths = null;
+            paths = Files.list(rootPath).collect(Collectors.toList());
+            for (Path p : paths) {
+                out.add(new FileInfo(p));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return out;
+
+    }
+
+
 }

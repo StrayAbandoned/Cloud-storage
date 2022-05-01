@@ -1,6 +1,11 @@
 package ru.geekbrains.storage;
 
-public enum RequestType {
+import java.io.Serializable;
+
+public enum RequestType implements Serializable {
     REG,
-    AUTH;
+    AUTH,
+    PATH,
+    GET_FILES,
+    UPLOAD;
 }

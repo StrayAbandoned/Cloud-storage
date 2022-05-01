@@ -53,9 +53,10 @@ public class Authentication {
             if (rs.next()) {
                 return false;
             }
-            PreparedStatement ps2 = connection.prepareStatement("INSERT INTO users_data (login, password)  VALUES (?,?);");
+            PreparedStatement ps2 = connection.prepareStatement("INSERT INTO users_data (login, password, path)  VALUES (?,?,?);");
             ps2.setString(1, regData.getLogin());
             ps2.setString(2, regData.getPassword());
+            ps2.setString(3,String.format("C:\\Users\\Stray\\Desktop\\Cloud-storage\\%s", regData.getLogin()));
             ps2.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -77,4 +78,26 @@ public class Authentication {
         }
         return false;
     }
+
+    public String getLogin(AuthRequest authRequest) {
+        return authRequest.getLogin();
+    }
+
+    public String getPath(AuthRequest authRequest) throws SQLException {
+        ResultSet rs = null;
+        try {
+            PreparedStatement ps3 = connection.prepareStatement("SELECT path FROM users_data WHERE login = ? AND password = ?;");
+            ps3.setString(1, authRequest.getLogin());
+            ps3.setString(2, authRequest.getPassword());
+            rs = ps3.executeQuery();
+            if (rs.next()) {
+                rs.getString("path");
+        }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rs.getString("path");
+    }
+
+
 }

@@ -1,8 +1,13 @@
 package ru.geekbrains.storage;
 
-public enum ResponseType {
+import java.io.Serializable;
+
+public enum ResponseType implements Serializable {
     REG_OK,
     REG_NO,
     AUTH_OK,
-    AUTH_NO;
+    AUTH_NO,
+    GET_FILES,
+    UPLOAD_OK,
+    UPLOAD_NO, PATH;
 }

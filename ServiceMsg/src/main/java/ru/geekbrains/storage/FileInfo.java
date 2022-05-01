@@ -1,10 +1,12 @@
-package ru.geekbrains.storage.client;
+package ru.geekbrains.storage;
+
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FileInfo {
+public class FileInfo implements Serializable {
     public final static String back = "...BACK...";
     private String fileName;
     private long fileSize;
@@ -47,4 +49,9 @@ public class FileInfo {
         return this.fileSize == -2;
     }
 
+    public void copyItem() {
+    }
+
+    public void deleteItem() {
+    }
 }
