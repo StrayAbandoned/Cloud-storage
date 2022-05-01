@@ -69,7 +69,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         }
         if(request instanceof UploadRequest){
             Server.getLogger().info("Uploading...");
-            String pathOfFile = String.format(String.valueOf(personalRemote)+"\\%s",((UploadRequest)request).getFilename());
+            String pathOfFile = String.format(((UploadRequest) request).getRemPath()+"\\%s",((UploadRequest)request).getFilename());
             System.out.println(pathOfFile);
 
             try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {

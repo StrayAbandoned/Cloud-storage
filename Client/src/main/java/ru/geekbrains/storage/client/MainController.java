@@ -253,9 +253,10 @@ public class MainController implements Initializable {
 
     public void sendFile(ActionEvent actionEvent) throws FileNotFoundException {
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
+        String remPath = remotepath.getText();
         if(fileinfo!=null&&!fileinfo.isDirectory()){
             File file = new File(String.valueOf(root),fileinfo.getFileName());
-            network.sendFiles(new UploadRequest(file));
+            network.sendFiles(new UploadRequest(file, remPath));
         }
 
     }
@@ -288,11 +289,13 @@ public class MainController implements Initializable {
             if (fileInfo != null) {
                 if (fileInfo.isDirectory()) {
                     Path pathTo = remoteRoot.resolve(fileInfo.getFileName());
+                    ClientService.setPath(String.valueOf(pathTo));
                     goToRemoteDirectory(pathTo);
                 }
                 if (fileInfo.isBack()) {
                     if (remoteRoot.getParent() != null && remoteRoot.getNameCount()>5) {
                         Path pathTo = remoteRoot.getParent();
+                        ClientService.setPath(String.valueOf(pathTo));
                         goToRemoteDirectory(pathTo);
                     }
 

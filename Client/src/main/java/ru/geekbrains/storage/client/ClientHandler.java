@@ -11,6 +11,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter{
     Network network;
 
     public ClientHandler(Network network) {
+
         this.network = network;
     }
 
@@ -22,7 +23,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         BasicResponse response = (BasicResponse) msg;
-        System.out.println(response.getType());
+        ClientService.getLogger().info(String.valueOf(response.getType()));
         if(response instanceof RegResponse){
             if(response.getType() == ResponseType.REG_OK){
                 ClientService.getRegController().regInfo("Registration successful!");
