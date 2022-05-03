@@ -10,10 +10,12 @@ public class ClientService {
 
     private static RegController regController;
     private static MainController mainController;
+    private static NameController nameController;
     private static Network network;
     private static String path;
     private static LogManager logManager = LogManager.getLogManager();
     private static Logger logger = Logger.getLogger(ClientService.class.getName());
+    private static RenameController renameController;
 
     static {
 
@@ -58,5 +60,13 @@ public class ClientService {
 
     public static Logger getLogger() {
         return logger;
+    }
+
+    public static void setNameController(NameController nameController) {
+        ClientService.nameController = nameController;
+    }
+
+    public static void setrenameController(RenameController renameController) {
+        ClientService.renameController = renameController;
     }
 }

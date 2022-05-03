@@ -13,13 +13,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Callback;
 import ru.geekbrains.storage.*;
-
+import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,27 +29,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
-    private final Path start = Paths.get(System.getProperty("user.dir"));
-
-
-
-    private Path root, remoteRoot;
+    private File fileForCopy;
+    private File directoryForCopy;
+    private String resolution;
+    private Path root = Paths.get(System.getProperty("user.dir")), remoteRoot;
     private RegController regController;
-
+    private NameController nameController;
+    private RenameController renameController;
     private boolean isAuthenticated;
-    private RegRequest authData;
     private Network network;
-    private Stage stage, regStage;
+    private Stage stage, regStage, nameStage, renameStage;
     private List<FileInfo> files,remFiles;
 
-    @FXML
-    private Button uploadbtn, downloadbtn;
     @FXML
     private ListView<FileInfo> localfiles, remotefiles;
     @FXML
     private TextField localpath, remotepath;
-    @FXML
-    private Button btnlog;
     @FXML
     private Button btnreg;
     @FXML
@@ -68,10 +61,6 @@ public class MainController implements Initializable {
     private VBox serverside;
     @FXML
     private ContextMenu context = new ContextMenu();
-    @FXML
-    private MenuItem copy;
-    @FXML
-    private MenuItem delete;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -80,10 +69,10 @@ public class MainController implements Initializable {
 
         Platform.runLater(() -> {
             stage = (Stage) btnreg.getScene().getWindow();
-            files = showFiles(start);
+            files = showFiles(root);
             localfiles.getItems().addAll(files);
             localfiles.setCellFactory(x -> new FileListCell());
-            goToDirectory(start);
+            goToDirectory(root);
 
             stage.setOnCloseRequest(windowEvent -> {
                 Platform.exit();
@@ -213,10 +202,16 @@ public class MainController implements Initializable {
 
     public void filesClicked(MouseEvent mouseEvent) {
         FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
+        localfiles.setContextMenu(context);
+//        if(mouseEvent.getButton()== MouseButton.SECONDARY){
+//            //copy.setOnAction(actionEvent -> fileInfo.copyItem());
+//            delete.setOnAction(actionEvent -> fileInfo.deleteItem());
+//            rename.setOnAction(actionEvent -> fileInfo.renameItem());
+//           // new_folder.setOnAction(actionEvent -> fileInfo.renameItem());
+//
+//        }
 
-//        copy.setOnAction(actionEvent -> fileInfo.copyItem());
-//        delete.setOnAction(actionEvent -> fileInfo.deleteItem());
-//        localfiles.setContextMenu(context);
+
 
         if (mouseEvent.getClickCount() == 2) {
 
@@ -246,9 +241,27 @@ public class MainController implements Initializable {
 
 
     public void copy(ActionEvent actionEvent) {
+        FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
+        if(fileinfo!=null){
+            if (!fileinfo.isDirectory()){
+                fileForCopy = new File(String.valueOf(root), fileinfo.getFileName());
+                directoryForCopy = null;
+            } else {
+                directoryForCopy = new File(String.valueOf(root), fileinfo.getFileName());
+                fileForCopy = null;
+            }
+
+        }
+
+
     }
 
     public void delete(ActionEvent actionEvent) {
+        FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
+        if (fileinfo!=null){
+            FileUtils.deleteQuietly(new File(String.valueOf(root), fileinfo.getFileName()));
+            goToDirectory(root);
+        }
     }
 
     public void sendFile(ActionEvent actionEvent) throws FileNotFoundException {
@@ -262,14 +275,12 @@ public class MainController implements Initializable {
     }
 
     public void getFile(ActionEvent actionEvent) {
+
     }
 
     public void filesClickedRemote(MouseEvent mouseEvent) {
         FileInfo fileInfo = remotefiles.getSelectionModel().getSelectedItem();
 
-//        copy.setOnAction(actionEvent -> fileInfo.copyItem());
-//        delete.setOnAction(actionEvent -> fileInfo.deleteItem());
-//        localfiles.setContextMenu(context);
 
         if (mouseEvent.getClickCount() == 2) {
 //            if (fileInfo != null) {
@@ -302,5 +313,126 @@ public class MainController implements Initializable {
                 }
             }
         }
+    }
+
+    public void rename(ActionEvent actionEvent) {
+        FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
+        if(fileinfo!=null){
+            if (fileinfo.isDirectory()){
+                resolution=null;
+                if (renameStage == null) {
+                    createRenameWindow();
+                    ClientService.setrenameController(renameController);
+                }
+                renameStage.show();
+            } else {
+                resolution = fileinfo.getFileName().substring(fileinfo.getFileName().lastIndexOf('.'));
+                if (renameStage == null) {
+                    createRenameWindow();
+                    ClientService.setrenameController(renameController);
+                }
+                renameStage.show();
+            }
+
+        }
+
+    }
+
+    private void createRenameWindow() {
+        try {
+            FXMLLoader fxmlLoader3 = new FXMLLoader(ClientApp.class.getResource("rename.fxml"));
+            Parent root = fxmlLoader3.load();
+            renameStage = new Stage();
+            renameStage.setTitle("Enter the name of file or directory");
+            renameStage.setScene(new Scene(root, 400, 100));
+            renameStage.initModality(Modality.APPLICATION_MODAL);
+            renameStage.initStyle(StageStyle.UTILITY);
+            renameController = fxmlLoader3.getController();
+            renameController.setController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createNewDirectory(ActionEvent actionEvent) {
+        if (nameStage == null) {
+            createNameWindow();
+            ClientService.setNameController(nameController);
+        }
+        nameStage.show();
+    }
+
+    private void createNameWindow() {
+        try {
+            FXMLLoader fxmlLoader2 = new FXMLLoader(ClientApp.class.getResource("name.fxml"));
+            Parent root = fxmlLoader2.load();
+            nameStage = new Stage();
+            nameStage.setTitle("Enter the name of file or directory");
+            nameStage.setScene(new Scene(root, 400, 100));
+            nameStage.initModality(Modality.APPLICATION_MODAL);
+            nameStage.initStyle(StageStyle.UTILITY);
+            nameController = fxmlLoader2.getController();
+            nameController.setController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createFolder(String name) {
+        nameStage.close();
+
+        String path = localpath.getText();
+        File dir = new File(path, name);
+        if(dir.mkdirs()){
+            ClientService.getLogger().info("Folder created!");
+        }
+        goToDirectory(root);
+
+    }
+
+
+    public void paste(ActionEvent actionEvent) {
+        if (fileForCopy!=null){
+            try {
+                FileUtils.copyFile(fileForCopy, new File(String.valueOf(root), fileForCopy.getName()));
+                fileForCopy=null;
+                goToDirectory(root);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (directoryForCopy!=null){
+            try {
+                FileUtils.copyDirectory(directoryForCopy, new File(String.valueOf(root),directoryForCopy.getName()));
+                directoryForCopy=null;
+                goToDirectory(root);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public String getResolution() {
+        return resolution;
+    }
+
+    public void renameFolder(String name) {
+        renameStage.close();
+        FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
+        String path = localpath.getText();
+        File dir = new File(path, fileInfo.getFileName());
+        dir.renameTo(new File(path, name));
+        goToDirectory(root);
+
+    }
+
+    public void renameFile(String name) {
+        renameStage.close();
+        FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
+        String path = localpath.getText();
+        File file = new File(path, fileInfo.getFileName());
+        file.renameTo(new File(path, name+resolution));
+        goToDirectory(root);
     }
 }

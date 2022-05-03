@@ -54,4 +54,7 @@ public class FileInfo implements Serializable {
 
     public void deleteItem() {
     }
+
+    public void renameItem() {
+    }
 }

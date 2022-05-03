@@ -5,6 +5,7 @@ module ru.geekbrains.storage.client {
     requires io.netty.codec;
     requires ServiceMsg;
     requires java.logging;
+    requires org.apache.commons.io;
 
 
     opens ru.geekbrains.storage.client to javafx.fxml;
