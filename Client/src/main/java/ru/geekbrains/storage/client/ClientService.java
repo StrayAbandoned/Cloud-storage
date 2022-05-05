@@ -16,6 +16,7 @@ public class ClientService {
     private static LogManager logManager = LogManager.getLogManager();
     private static Logger logger = Logger.getLogger(ClientService.class.getName());
     private static RenameController renameController;
+    private static boolean serverMarker;
 
     static {
 
@@ -68,5 +69,13 @@ public class ClientService {
 
     public static void setrenameController(RenameController renameController) {
         ClientService.renameController = renameController;
+    }
+
+    public static boolean getServerMarker() {
+        return serverMarker;
+    }
+
+    public static void setServerMarker(boolean serverMarker) {
+        ClientService.serverMarker = serverMarker;
     }
 }

@@ -3,6 +3,9 @@ package ru.geekbrains.storage.client;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
+import ru.geekbrains.storage.NewFolderRequest;
+import ru.geekbrains.storage.RenameRequest;
+import ru.geekbrains.storage.RequestType;
 
 public class RenameController {
 
@@ -21,11 +24,21 @@ public class RenameController {
         nameOfFile.clear();
         if (name.isBlank()) {
             return;
-        } else {
-            if(ClientService.getMainController().getResolution()==null){
-                ClientService.getMainController().renameFolder(name);
+        }
+        if (ClientService.getServerMarker()) {
+            ClientService.setServerMarker(false);
+            String oldName = ClientService.getMainController().getOldName();
+            if (ClientService.getMainController().getResolution() != null) {
+                ClientService.getNetwork().sendFiles(new RenameRequest(oldName, name+ClientService.getMainController().getResolution()));
+            } else {
+                ClientService.getNetwork().sendFiles(new RenameRequest(oldName, name));
             }
-            else {
+            ClientService.getMainController().setResolution(null);
+            ClientService.getMainController().getRenameStage().close();
+        } else {
+            if (ClientService.getMainController().getResolution() == null) {
+                ClientService.getMainController().renameFolder(name);
+            } else {
                 ClientService.getMainController().renameFile(name);
             }
 

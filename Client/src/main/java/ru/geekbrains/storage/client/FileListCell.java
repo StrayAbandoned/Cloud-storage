@@ -5,7 +5,8 @@ import javafx.scene.control.ListCell;
 import ru.geekbrains.storage.FileInfo;
 
 public class FileListCell extends ListCell<FileInfo> {
-    private FXMLLoader fxmlLoader;
+    String fileName;
+    String fileSize;
 
     @Override
     public void updateSelected(boolean selected){
@@ -18,12 +19,12 @@ public class FileListCell extends ListCell<FileInfo> {
         if (item == null || empty) {
             setText(null);
         } else {
-            String fileName = String.format("%-20s", item.getFileName());
-            String fileSize = String.format("%10s bytes", item.getFileSize());
+            fileName = String.format("%-20s", item.getFileName());
+            fileSize = String.format("%10s bytes", item.getFileSize());
             if (item.getFileSize() == -1L || item.getFileSize() == -2L) {
                 fileSize = " ";
             }
-            String text = String.format("%s|%s", fileName, fileSize);
+            String text = fileName + "|" + fileSize;
             setText(text);
         }
     }

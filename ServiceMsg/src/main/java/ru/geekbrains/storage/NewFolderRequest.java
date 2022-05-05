@@ -1,13 +1,10 @@
 package ru.geekbrains.storage;
 
-public class PathRequest implements BasicRequest{
-    RequestType type = RequestType.PATH;
+public class NewFolderRequest implements BasicRequest{
+    RequestType type = RequestType.NEW_REMOTE_FOLDER;
     String name;
 
-    public PathRequest() {
-    }
-
-    public PathRequest(String name) {
+    public NewFolderRequest(String name) {
         this.name = name;
     }
 

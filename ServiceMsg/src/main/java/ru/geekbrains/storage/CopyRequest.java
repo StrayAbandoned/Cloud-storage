@@ -1,14 +1,12 @@
 package ru.geekbrains.storage;
 
-public class PathRequest implements BasicRequest{
-    RequestType type = RequestType.PATH;
+public class CopyRequest implements BasicRequest{
+    RequestType type;
     String name;
 
-    public PathRequest() {
-    }
-
-    public PathRequest(String name) {
+    public CopyRequest(String name, RequestType type) {
         this.name = name;
+        this.type = type;
     }
 
     @Override

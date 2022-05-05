@@ -45,16 +45,23 @@ public class ClientHandler extends ChannelInboundHandlerAdapter{
         }
         if(response instanceof PathResponse){
             ClientService.setPath(((PathResponse) response).getPath());
-            ctx.writeAndFlush(new GetFilesRequest(ClientService.getPath()));
+            ctx.writeAndFlush(new GetFilesRequest());
         }
 
         if(response instanceof GetFilesResponse){
-            ClientService.getMainController().showRemoteFiles(((GetFilesResponse) response).getFiles(), Path.of(((GetFilesResponse) response).getPath()));
+            ClientService.getMainController().clearRemoteFiles();
+            ClientService.getMainController().showRemoteFiles(((GetFilesResponse) response).getFiles(), ((GetFilesResponse) response).getPath());
         }
 
         if (response instanceof UploadResponse){
-            ctx.writeAndFlush(new GetFilesRequest(ClientService.getPath()));
+            ctx.writeAndFlush(new GetFilesRequest());
         }
+        if (response instanceof NewFolderResponse){
+            ClientService.getMainController().getNameStage().close();
+            ClientService.setServerMarker(false);
+            ctx.writeAndFlush(new GetFilesRequest());
+        }
+
     }
 
     @Override

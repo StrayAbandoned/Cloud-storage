@@ -57,4 +57,11 @@ public class FileInfo implements Serializable {
 
     public void renameItem() {
     }
+
+    @Override
+    public String toString() {
+        return "FileInfo{" +
+                "fileName='" + fileName + '\'' +
+                '}';
+    }
 }

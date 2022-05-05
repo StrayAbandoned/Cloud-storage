@@ -29,18 +29,18 @@
                     <Insets top="10.0" left="10.0" right="10.0"/>
                 </HBox.margin>
             </PasswordField>
-            <Button fx:id="btnlog" onAction="#login" text="Login" minWidth="100">
+            <Button fx:id="btnlog" onAction="#loginButtonClicked" text="Login" minWidth="100">
                 <HBox.margin>
                     <Insets top="10.0" right="10.0"/>
                 </HBox.margin>
             </Button>
-            <Button fx:id="btnreg" onAction="#registration" text="Registration" minWidth="100">
+            <Button fx:id="btnreg" onAction="#registrationButtonClicked" text="Registration" minWidth="100">
                 <HBox.margin>
                     <Insets top="10.0" right="10.0"/>
                 </HBox.margin>
             </Button>
         </HBox>
-        <Label fx:id="info"  minWidth="100" HBox.hgrow="ALWAYS" textAlignment="CENTER">
+        <Label fx:id="info" minWidth="100" HBox.hgrow="ALWAYS" textAlignment="CENTER">
             <VBox.margin>
                 <Insets top="10.0" left="10.0" right="10.0"/>
             </VBox.margin>
@@ -48,21 +48,20 @@
     </VBox>
 
 
-
-
     <VBox fx:id="clientside" alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10" visible="false" managed="false">
         <TextField fx:id="localpath" editable="false" focusTraversable="false"/>
         <ListView fx:id="localfiles" prefHeight="400" VBox.vgrow="ALWAYS" onMouseClicked="#filesClicked">
 
-                <ContextMenu fx:id="context">
-                    <items>
-                        <MenuItem fx:id="copy" mnemonicParsing="false" onAction="#copy" text="COPY" />
-                        <MenuItem fx:id="paste" mnemonicParsing="false" onAction="#paste" text="PASTE" />
-                        <MenuItem fx:id="delete" mnemonicParsing="false" onAction="#delete" text="DELETE" />
-                        <MenuItem fx:id="rename" mnemonicParsing="false" onAction="#rename" text="RENAME" />
-                        <MenuItem fx:id="new_folder" mnemonicParsing="false" onAction="#createNewDirectory" text="NEW FOLDER" />
-                    </items>
-                </ContextMenu>
+            <ContextMenu fx:id="context">
+                <items>
+                    <MenuItem fx:id="copy" mnemonicParsing="false" onAction="#copy" text="COPY"/>
+                    <MenuItem fx:id="paste" mnemonicParsing="false" onAction="#paste" text="PASTE"/>
+                    <MenuItem fx:id="delete" mnemonicParsing="false" onAction="#delete" text="DELETE"/>
+                    <MenuItem fx:id="rename" mnemonicParsing="false" onAction="#rename" text="RENAME"/>
+                    <MenuItem fx:id="new_folder" mnemonicParsing="false" onAction="#createNewDirectory"
+                              text="NEW FOLDER"/>
+                </items>
+            </ContextMenu>
 
         </ListView>
         <Button fx:id="uploadbtn" alignment="CENTER" contentDisplay="CENTER" text="UPLOAD" onAction="#sendFile"/>
@@ -71,12 +70,16 @@
     <VBox fx:id="serverside" alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10" visible="false" managed="false">
         <TextField fx:id="remotepath" editable="false" focusTraversable="false"/>
         <ListView fx:id="remotefiles" prefHeight="400" VBox.vgrow="ALWAYS" onMouseClicked="#filesClickedRemote">
-<!--        <ContextMenu fx:id="context2">-->
-<!--            <items>-->
-<!--                <MenuItem fx:id="copy2" mnemonicParsing="false" onAction="#copy" text="COPY" />-->
-<!--                <MenuItem fx:id="delete2" mnemonicParsing="false" onAction="#delete" text="DELETE" />-->
-<!--            </items>-->
-<!--        </ContextMenu>-->
+            <ContextMenu fx:id="contextRemote">
+                <items>
+                    <MenuItem fx:id="copyRemote" mnemonicParsing="false" onAction="#copyRemote" text="COPY"/>
+                    <MenuItem fx:id="pasteRemote" mnemonicParsing="false" onAction="#pasteRemote" text="PASTE"/>
+                    <MenuItem fx:id="deleteRemote" mnemonicParsing="false" onAction="#deleteRemote" text="DELETE"/>
+                    <MenuItem fx:id="renameRemote" mnemonicParsing="false" onAction="#renameRemote" text="RENAME"/>
+                    <MenuItem fx:id="new_folderRemote" mnemonicParsing="false" onAction="#createNewDirectoryRemote"
+                              text="NEW FOLDER"/>
+                </items>
+            </ContextMenu>
         </ListView>
         <Button fx:id="downloadbtn" alignment="CENTER" contentDisplay="CENTER" text="DOWNLOAD" onAction="#getFile"/>
     </VBox>

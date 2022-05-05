@@ -9,10 +9,8 @@ public class UploadRequest implements BasicRequest{
     File file;
     String filename;
     byte [] data;
-    String remPath;
 
-    public UploadRequest(File file, String remPath) {
-        this.remPath =remPath;
+    public UploadRequest(File file) {
         this.file=file;
         this.filename = file.getName();
         try {
@@ -39,7 +37,4 @@ public class UploadRequest implements BasicRequest{
         return file;
     }
 
-    public String getRemPath() {
-        return remPath;
-    }
 }

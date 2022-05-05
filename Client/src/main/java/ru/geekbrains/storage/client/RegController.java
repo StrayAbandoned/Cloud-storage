@@ -34,7 +34,7 @@ public class RegController {
             return;
         }
         if (!login.isBlank()&&password.equals(passConfirm)){
-            controller.tryToReg(new RegRequest(login, password));
+            controller.sendRegistrationRequest(new RegRequest(login, password));
         } else if (!password.equals(passConfirm)){
             textArea.appendText("Your password must be the same!");
         }
