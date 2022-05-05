@@ -57,8 +57,12 @@ public class ClientHandler extends ChannelInboundHandlerAdapter{
             ctx.writeAndFlush(new GetFilesRequest());
         }
         if (response instanceof NewFolderResponse){
-            ClientService.getMainController().getNameStage().close();
+            //ClientService.getMainController().getNameStage().close();
             ClientService.setServerMarker(false);
+            ctx.writeAndFlush(new GetFilesRequest());
+        }
+        if (response instanceof DownloadResponse){
+            ClientService.getMainController().saveDownloadedFile(((DownloadResponse) response).getFilename(), ((DownloadResponse) response).getData());
             ctx.writeAndFlush(new GetFilesRequest());
         }
 

@@ -18,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -375,6 +376,10 @@ public class MainController implements Initializable {
     }
 
     public void getFile(ActionEvent actionEvent) {
+        FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
+        if (fileinfo != null && !fileinfo.isDirectory()){
+            network.sendFiles(new DownloadRequest(fileinfo.getFileName()));
+        }
 
     }
 
@@ -474,5 +479,15 @@ public class MainController implements Initializable {
 
     public void setResolution(String resolution) {
         this.resolution = resolution;
+    }
+
+    public void saveDownloadedFile(String filename, byte[] data) {
+        String pathOfFile = String.format(root + "\\%s", filename);
+        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
+            fos.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        goToDirectory(root);
     }
 }

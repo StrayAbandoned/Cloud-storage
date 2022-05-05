@@ -131,6 +131,10 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
            rename(((RenameRequest) request).getOldName(), ((RenameRequest) request).getNewName());
             ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), s[s.length - 1]));
         }
+
+        if (request instanceof DownloadRequest){
+            ctx.writeAndFlush(new DownloadResponse(new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName())));
+        }
     }
 
     private void delete(String fileName) {
