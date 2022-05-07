@@ -17,6 +17,13 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.76.Final</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/at.favre.lib/bcrypt -->
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
         <dependency>
             <artifactId>ServiceMsg</artifactId>
             <groupId>ru.geekbrains.storage</groupId>

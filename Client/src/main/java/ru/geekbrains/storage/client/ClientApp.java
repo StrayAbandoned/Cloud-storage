@@ -11,8 +11,8 @@ import java.util.Objects;
 public class ClientApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(ClientApp.class.getResource("main-window.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 800);
+        FXMLLoader fxmlLoader = new FXMLLoader(ClientApp.class.getResource("start-window.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 1280, 800);
         stage.setTitle("cloud-storage");
         stage.setScene(scene);
         scene.getStylesheets().add(this.getClass().getResource("styles.css").toExternalForm());
