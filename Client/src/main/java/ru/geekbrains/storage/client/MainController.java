@@ -110,12 +110,14 @@ public class MainController implements Initializable {
     }
 
     public void failAuth() {
-        new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
+        Alert alert = new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
     }
 
 
     public void backToAuthentication(ActionEvent actionEvent) {
+        ClientService.getNetwork().close();
         setAuthenticated(false);
+        Platform.exit();
     }
 
 }

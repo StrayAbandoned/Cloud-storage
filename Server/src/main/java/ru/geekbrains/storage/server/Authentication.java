@@ -1,5 +1,6 @@
 package ru.geekbrains.storage.server;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import ru.geekbrains.storage.AuthRequest;
 import ru.geekbrains.storage.RegRequest;
 
@@ -45,17 +46,15 @@ public class Authentication {
     public boolean registration(RegRequest regData) {
 
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT login, password FROM users_data WHERE login = ? AND password = ?;");
+            PreparedStatement ps = connection.prepareStatement("SELECT login FROM users_data WHERE login = ?;");
             ps.setString(1, regData.getLogin());
-            ps.setString(2, regData.getPassword());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return false;
             }
-            PreparedStatement ps2 = connection.prepareStatement("INSERT INTO users_data (login, password, path)  VALUES (?,?,?);");
+            PreparedStatement ps2 = connection.prepareStatement("INSERT INTO users_data (login, password)  VALUES (?,?);");
             ps2.setString(1, regData.getLogin());
-            ps2.setString(2, regData.getPassword());
-            ps2.setString(3,String.format("C:\\Users\\Stray\\Desktop\\Cloud-storage\\%s", regData.getLogin()));
+            ps2.setString(2, BCrypt.withDefaults().hashToString(12, regData.getPassword().toCharArray()));
             ps2.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -65,12 +64,15 @@ public class Authentication {
     public boolean login(AuthRequest authData) {
 
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT login, password FROM users_data WHERE login = ? AND password = ?;");
+            PreparedStatement ps = connection.prepareStatement("SELECT login, password FROM users_data WHERE login = ?;");
             ps.setString(1, authData.getLogin());
-            ps.setString(2, authData.getPassword());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return true;
+                BCrypt.Result result = BCrypt.verifyer().verify(authData.getPassword().toCharArray(), rs.getString(2));
+                if(result.verified){
+                    return true;
+                }
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
