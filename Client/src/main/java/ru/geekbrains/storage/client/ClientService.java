@@ -11,6 +11,8 @@ public class ClientService {
     private static RegController regController;
     private static MainController mainController;
     private static NameController nameController;
+    private static LocalController localController;
+    private static RemoteController remoteController;
     private static Network network;
     private static String path;
     private static LogManager logManager = LogManager.getLogManager();
@@ -19,7 +21,6 @@ public class ClientService {
     private static boolean serverMarker;
 
     static {
-
         try {
             logManager.readConfiguration(new FileInputStream("Client/logging.properties"));
         } catch (IOException e) {
@@ -51,14 +52,6 @@ public class ClientService {
         ClientService.network = network;
     }
 
-    public static void setPath(String path) {
-        ClientService.path = path;
-    }
-
-    public static String getPath() {
-        return path;
-    }
-
     public static Logger getLogger() {
         return logger;
     }
@@ -77,5 +70,21 @@ public class ClientService {
 
     public static void setServerMarker(boolean serverMarker) {
         ClientService.serverMarker = serverMarker;
+    }
+
+    public static LocalController getLocalController() {
+        return localController;
+    }
+
+    public static void setLocalController(LocalController localController) {
+        ClientService.localController = localController;
+    }
+
+    public static RemoteController getRemoteController() {
+        return remoteController;
+    }
+
+    public static void setRemoteController(RemoteController remoteController) {
+        ClientService.remoteController = remoteController;
     }
 }

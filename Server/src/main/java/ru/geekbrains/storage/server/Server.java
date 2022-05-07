@@ -10,30 +10,21 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import ru.geekbrains.storage.BasicRequest;
-import ru.geekbrains.storage.FileInfo;
-import ru.geekbrains.storage.UploadRequest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class Server {
     private final static int PORT = 26894;
     private final static int FILE_SIZE = 10_485_760;
     private Authentication authentication;
 
-    private LogManager logManager = LogManager.getLogManager();
-    private static Logger logger = Logger.getLogger(Server.class.getName());
-    private Server ser = this;
+    private final LogManager logManager = LogManager.getLogManager();
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
+    private final Server ser = this;
 
 
 

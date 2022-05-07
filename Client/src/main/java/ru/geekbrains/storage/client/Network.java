@@ -19,7 +19,7 @@ public class Network {
     private final String HOSTNAME = "localhost";
     private final int FILE_SIZE = 10_485_760;
     private Channel channel;
-    private Network network = this;
+    private final Network network = this;
 
     public Network(){
         ClientService.setNetwork(network);
@@ -34,7 +34,7 @@ public class Network {
                         .handler(new ChannelInitializer<SocketChannel>() {
 
                             @Override
-                            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            protected void initChannel(SocketChannel socketChannel) {
                                 //channel = socketChannel;
                                 socketChannel.pipeline().addLast(
                                         new ObjectDecoder(FILE_SIZE, ClassResolvers.weakCachingResolver(Network.class.getClassLoader())),

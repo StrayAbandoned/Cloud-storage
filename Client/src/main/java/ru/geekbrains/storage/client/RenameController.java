@@ -3,19 +3,16 @@ package ru.geekbrains.storage.client;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
-import ru.geekbrains.storage.NewFolderRequest;
 import ru.geekbrains.storage.RenameRequest;
-import ru.geekbrains.storage.RequestType;
 
 public class RenameController {
 
-
-    private MainController controller;
+    private Controller controller;
 
     @FXML
     public TextField nameOfFile;
 
-    public void setController(MainController controller) {
+    public void setController(Controller controller) {
         this.controller = controller;
     }
 
@@ -27,19 +24,19 @@ public class RenameController {
         }
         if (ClientService.getServerMarker()) {
             ClientService.setServerMarker(false);
-            String oldName = ClientService.getMainController().getOldName();
-            if (ClientService.getMainController().getResolution() != null) {
-                ClientService.getNetwork().sendFiles(new RenameRequest(oldName, name+ClientService.getMainController().getResolution()));
+            String oldName = ClientService.getRemoteController().getOldName();
+            if (ClientService.getRemoteController().getResolution() != null) {
+                ClientService.getNetwork().sendFiles(new RenameRequest(oldName, name+ClientService.getRemoteController().getResolution()));
             } else {
                 ClientService.getNetwork().sendFiles(new RenameRequest(oldName, name));
             }
-            ClientService.getMainController().setResolution(null);
-            ClientService.getMainController().getRenameStage().close();
+            ClientService.getRemoteController().setResolution(null);
+            ClientService.getRemoteController().getRenameStage().close();
         } else {
-            if (ClientService.getMainController().getResolution() == null) {
-                ClientService.getMainController().renameFolder(name);
+            if (ClientService.getLocalController().getResolution() == null) {
+                ClientService.getLocalController().renameFolder(name);
             } else {
-                ClientService.getMainController().renameFile(name);
+                ClientService.getLocalController().renameFile(name);
             }
 
         }

@@ -5,25 +5,25 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
-public class FileInfo implements Serializable {
-    public final static String back = "...BACK...";
-    private String fileName;
-    private long fileSize;
-
-    public FileInfo(String fileName, long fileSize) {
-        this.fileName = fileName;
-        this.fileSize = fileSize;
-    }
-
-    public FileInfo(Path path) throws IOException {
-        this.fileName = path.getFileName().toString();
-        if (Files.isDirectory(path)) {
-            this.fileSize = -1L;
-        } else {
-            this.fileSize = Files.size(path);
+public class FileInfo implements Serializable{
+    public enum FileType{
+        FILE("F"), DIRECTORY("D");
+        FileType(String name) {
+            this.name = name;
+        }
+        private String name;
+        public String getName(){
+            return name;
         }
     }
+
+    private String fileName;
+    private FileType type;
+    private long size;
+    private LocalDate lastModified;
 
     public String getFileName() {
         return fileName;
@@ -33,35 +33,40 @@ public class FileInfo implements Serializable {
         this.fileName = fileName;
     }
 
-    public long getFileSize() {
-        return fileSize;
+    public FileType getType() {
+        return type;
     }
 
-    public void setFileSize(long fileSize) {
-        this.fileSize = fileSize;
+    public void setType(FileType type) {
+        this.type = type;
     }
 
-    public boolean isDirectory() {
-        return this.fileSize == -1;
+    public long getSize() {
+        return size;
     }
 
-    public boolean isBack() {
-        return this.fileSize == -2;
+    public void setSize(long size) {
+        this.size = size;
     }
 
-    public void copyItem() {
+    public LocalDate getLastModified() {
+        return lastModified;
     }
 
-    public void deleteItem() {
+    public void setLastModified(LocalDate lastModified) {
+        this.lastModified = lastModified;
     }
 
-    public void renameItem() {
+    public FileInfo(Path path){
+        try {
+            this.fileName = path.getFileName().toString();
+            this.type = Files.isDirectory(path)? FileType.DIRECTORY: FileType.FILE;
+            this.size = this.type == FileType.DIRECTORY? -1L: Files.size(path);
+            this.lastModified = LocalDate.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    @Override
-    public String toString() {
-        return "FileInfo{" +
-                "fileName='" + fileName + '\'' +
-                '}';
-    }
 }

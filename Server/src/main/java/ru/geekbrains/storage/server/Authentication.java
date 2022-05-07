@@ -1,6 +1,5 @@
 package ru.geekbrains.storage.server;
 
-
 import ru.geekbrains.storage.AuthRequest;
 import ru.geekbrains.storage.RegRequest;
 
@@ -83,21 +82,20 @@ public class Authentication {
         return authRequest.getLogin();
     }
 
-    public String getPath(AuthRequest authRequest) throws SQLException {
-        ResultSet rs = null;
-        try {
-            PreparedStatement ps3 = connection.prepareStatement("SELECT path FROM users_data WHERE login = ? AND password = ?;");
-            ps3.setString(1, authRequest.getLogin());
-            ps3.setString(2, authRequest.getPassword());
-            rs = ps3.executeQuery();
-            if (rs.next()) {
-                rs.getString("path");
-        }
-        }catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return rs.getString("path");
-    }
-
+//    public String getPath(AuthRequest authRequest) throws SQLException {
+//        ResultSet rs = null;
+//        try {
+//            PreparedStatement ps3 = connection.prepareStatement("SELECT path FROM users_data WHERE login = ? AND password = ?;");
+//            ps3.setString(1, authRequest.getLogin());
+//            ps3.setString(2, authRequest.getPassword());
+//            rs = ps3.executeQuery();
+//            if (rs.next()) {
+//                rs.getString("path");
+//        }
+//        }catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return rs.getString("path");
+//    }
 
 }
