@@ -69,4 +69,8 @@ public class FileInfo implements Serializable{
 
     }
 
+    public boolean isDirectory(){
+        return getType().getName().equals("D");
+    }
+
 }

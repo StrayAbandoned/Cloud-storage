@@ -46,7 +46,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             case AUTH -> {
                 if (server.getAuthentication().login((AuthRequest) msg)) {
                     login = server.getAuthentication().getLogin((AuthRequest) msg);
-                    ctx.writeAndFlush(new AuthResponse(ResponseType.AUTH_OK));
+                    ctx.writeAndFlush(new AuthResponse(ResponseType.AUTH_OK, login));
                     Server.getLogger().info("Client logged in");
                 } else {
                     ctx.writeAndFlush(new AuthResponse(ResponseType.AUTH_NO));
@@ -129,6 +129,14 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     ctx.writeAndFlush(new NewFolderResponse());
                 }
                 ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+
+            }
+            case CHANGE_PASSWORD -> {
+                if(server.getAuthentication().changePassword((ChangePasswordRequest) msg)){
+                    ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_OK));
+                } else{
+                    ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_NO));
+                }
 
             }
         }

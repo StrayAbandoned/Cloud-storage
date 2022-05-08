@@ -14,5 +14,6 @@ public enum RequestType implements Serializable {
     PASTE,
     DELETE,
     RENAME,
-    DOWNLOAD;
+    DOWNLOAD,
+    CHANGE_PASSWORD;
 }

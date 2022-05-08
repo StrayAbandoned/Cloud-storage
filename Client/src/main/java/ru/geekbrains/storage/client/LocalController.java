@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 
 public class LocalController implements Initializable, Controller {
     @FXML
+    private Button upload;
+    @FXML
     private TableView<FileInfo> localfiles;
     @FXML
     private ComboBox<String> disks;
@@ -40,6 +42,7 @@ public class LocalController implements Initializable, Controller {
     private TextField localPath;
     @FXML
     private ContextMenu context;
+
 
     private String resolution;
     private File fileForCopy;
@@ -149,8 +152,12 @@ public class LocalController implements Initializable, Controller {
 
     public void goToDirectory(MouseEvent mouseEvent) {
         FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
+        ClientService.getRemoteController().getDownload().setDisable(true);
+        if(fileInfo!=null&&!fileInfo.isDirectory()){
+            upload.setDisable(false);
+        } else upload.setDisable(true);
         if (mouseEvent.getClickCount() == 2) {
-            if (fileInfo.getType().getName().equals("D")) {
+            if (fileInfo.isDirectory()) {
                 getListOfFiles(Paths.get(localPath.getText()).resolve(fileInfo.getFileName()));
             }
         }
@@ -189,7 +196,7 @@ public class LocalController implements Initializable, Controller {
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
 
-            if (fileinfo.getType().getName().equals("D")) {
+            if (fileinfo.isDirectory()) {
                 resolution = null;
                 if (renameStage == null) {
                     createRenameWindow();
@@ -250,7 +257,7 @@ public class LocalController implements Initializable, Controller {
     public void uploadFile(ActionEvent actionEvent) {
         Network network = ClientService.getNetwork();
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
-        if (fileinfo != null && !fileinfo.getType().getName().equals("D")) {
+        if (fileinfo != null && !fileinfo.isDirectory()) {
             File file = new File(String.valueOf(root), fileinfo.getFileName());
             network.sendFiles(new UploadRequest(file));
         }
@@ -297,5 +304,9 @@ public class LocalController implements Initializable, Controller {
             ClientService.getLogger().info("Folder created!");
         }
         getListOfFiles(root);
+    }
+
+    public Button getUpload() {
+        return upload;
     }
 }

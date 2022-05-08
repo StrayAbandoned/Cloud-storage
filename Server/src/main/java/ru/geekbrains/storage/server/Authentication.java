@@ -2,6 +2,7 @@ package ru.geekbrains.storage.server;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import ru.geekbrains.storage.AuthRequest;
+import ru.geekbrains.storage.ChangePasswordRequest;
 import ru.geekbrains.storage.RegRequest;
 
 import java.sql.*;
@@ -56,10 +57,14 @@ public class Authentication {
             ps2.setString(1, regData.getLogin());
             ps2.setString(2, BCrypt.withDefaults().hashToString(12, regData.getPassword().toCharArray()));
             ps2.executeUpdate();
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return true;
+        return false;
     }
     public boolean login(AuthRequest authData) {
 
@@ -77,6 +82,26 @@ public class Authentication {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    public boolean changePassword(ChangePasswordRequest changePasswordRequest){
+        try {
+            PreparedStatement ps = connection.prepareStatement("SELECT login FROM users_data WHERE login = ?;");
+            ps.setString(1, changePasswordRequest.getLogin());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                PreparedStatement ps1 = connection.prepareStatement("UPDATE users_data SET password = ? WHERE login = ?;");
+                ps1.setString(1, BCrypt.withDefaults().hashToString(12, changePasswordRequest.getPassword().toCharArray()));
+                ps1.setString(2, changePasswordRequest.getLogin());
+                ps1.executeUpdate();
+                return true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return false;
     }
 

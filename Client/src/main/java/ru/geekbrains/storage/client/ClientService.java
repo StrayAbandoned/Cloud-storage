@@ -13,8 +13,9 @@ public class ClientService {
     private static NameController nameController;
     private static LocalController localController;
     private static RemoteController remoteController;
+    private static SettingController settingController;
     private static Network network;
-    private static String path;
+    private static String login;
     private static LogManager logManager = LogManager.getLogManager();
     private static Logger logger = Logger.getLogger(ClientService.class.getName());
     private static RenameController renameController;
@@ -86,5 +87,21 @@ public class ClientService {
 
     public static void setRemoteController(RemoteController remoteController) {
         ClientService.remoteController = remoteController;
+    }
+
+    public static SettingController getSettingController() {
+        return settingController;
+    }
+
+    public static void setSettingController(SettingController settingController) {
+        ClientService.settingController = settingController;
+    }
+
+    public static String getLogin() {
+        return login;
+    }
+
+    public static void setLogin(String login) {
+        ClientService.login = login;
     }
 }

@@ -14,11 +14,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ContextMenu?>
 <VBox alignment="CENTER" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.geekbrains.storage.client.LocalController">
-    <HBox>
+      fx:controller="ru.geekbrains.storage.client.LocalController" spacing="20">
+    <HBox spacing="20">
         <ComboBox fx:id="disks" onAction="#chooseDisk"/>
         <TextField fx:id="localPath" HBox.hgrow="ALWAYS" editable="false"/>
-        <Button text="BACK" onAction="#back"/>
+        <Button text="BACK" onAction="#back" maxWidth="Infinity" prefWidth="100"/>
     </HBox>
     <TableView fx:id="localfiles" VBox.vgrow="ALWAYS" onMouseClicked="#goToDirectory">
         <ContextMenu fx:id="context">
@@ -32,7 +32,7 @@
             </items>
         </ContextMenu>
     </TableView>
-    <Button text = "UPLOAD" focusTraversable="false" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#uploadFile"/>
+    <Button fx:id = "upload" text = "UPLOAD" focusTraversable="false" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#uploadFile" disable="true"/>
 <!--    <properties>-->
 <!--        <ctrl>-->
 <!--            <fx:reference source="controller"/>-->

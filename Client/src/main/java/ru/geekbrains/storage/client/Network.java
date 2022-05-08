@@ -39,7 +39,7 @@ public class Network {
                                 socketChannel.pipeline().addLast(
                                         new ObjectDecoder(FILE_SIZE, ClassResolvers.weakCachingResolver(Network.class.getClassLoader())),
                                         new ObjectEncoder(),
-                                        new ClientHandler(network));
+                                        new ClientHandler());
                             }
                         });
                 ChannelFuture future = boot.connect(HOSTNAME,PORT);

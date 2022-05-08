@@ -2,15 +2,11 @@ package ru.geekbrains.storage.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import ru.geekbrains.storage.*;
 
 public class ClientHandler extends ChannelInboundHandlerAdapter {
-
-    Network network;
-
-    public ClientHandler(Network network) {
-        this.network = network;
-    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -26,11 +22,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             case REG_NO -> ClientService.getRegController().regInfo("Registration failed!");
             case AUTH_OK -> {
                 ClientService.getMainController().setAuthenticated(true);
+                ClientService.setLogin(((AuthResponse)response).getLogin());
                 ctx.writeAndFlush(new PathRequest());
             }
             case AUTH_NO -> {
                 ClientService.getMainController().setAuthenticated(false);
-                ClientService.getMainController().failAuth();
+                //Alert alert = new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
+                //ClientService.getMainController().failAuth();
             }
             case PATH, UPLOAD_NO, UPLOAD_OK -> ctx.writeAndFlush(new GetFilesRequest());
             case GET_FILES -> ClientService.getRemoteController().showRemoteFiles(((GetFilesResponse) response).getFiles(), ((GetFilesResponse) response).getPath());
@@ -42,6 +40,17 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             case DOWNLOAD -> {
                 ClientService.getLocalController().saveDownloadedFile(((DownloadResponse) response).getFilename(), ((DownloadResponse) response).getData());
                 ctx.writeAndFlush(new GetFilesRequest());
+            }
+            case CHANGE_OK,CHANGE_NO ->{
+                if(response.getType().equals(ResponseType.CHANGE_OK)){
+                    ClientService.getSettingController().getResult().setText("Password changed!");
+
+                    ctx.writeAndFlush(new GetFilesRequest());
+                } else {
+                    ClientService.getSettingController().getResult().setText("Password wasn't changed!");
+                    ctx.writeAndFlush(new GetFilesRequest());
+
+                }
             }
         }
     }

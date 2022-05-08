@@ -14,10 +14,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ContextMenu?>
 <VBox alignment="CENTER" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.geekbrains.storage.client.RemoteController">
-    <HBox>
+      fx:controller="ru.geekbrains.storage.client.RemoteController"
+spacing="20">
+    <HBox spacing="20">
         <TextField fx:id="remotePath" HBox.hgrow="ALWAYS" editable="false"/>
-        <Button text="BACK" onAction="#back"/>
+        <Button text="BACK" maxWidth="Infinity" prefWidth="100" onAction="#back"/>
     </HBox>
     <TableView fx:id="remotefiles" VBox.vgrow="ALWAYS" onMouseClicked="#goToDirectory">
         <ContextMenu fx:id="context">
@@ -31,7 +32,7 @@
             </items>
         </ContextMenu>
     </TableView>
-    <Button text = "DOWNLOAD" focusTraversable="false" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#downloadFile"/>
+    <Button fx:id="download" text = "DOWNLOAD" focusTraversable="false" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#downloadFile" disable="true"/>
 <!--    <properties>-->
 <!--        <ctrl>-->
 <!--            <fx:reference source="controller"/>-->

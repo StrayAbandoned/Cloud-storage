@@ -17,11 +17,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class MainController implements Initializable {
+public class MainController implements Initializable, Controller {
+
 
     private RegController regController;
+    private SettingController settingController;
     private Network network;
-    private Stage stage, regStage;
+    private Stage stage, regStage, settingStage;
 
     @FXML
     private Button btnreg;
@@ -37,6 +39,7 @@ public class MainController implements Initializable {
     private VBox localPanel;
     @FXML
     private VBox remotePanel;
+    public MenuItem settings;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -107,6 +110,7 @@ public class MainController implements Initializable {
         localPanel.setManaged(authenticated);
         remotePanel.setVisible(authenticated);
         remotePanel.setManaged(authenticated);
+        settings.setDisable(!authenticated);
     }
 
     public void failAuth() {
@@ -120,4 +124,36 @@ public class MainController implements Initializable {
         Platform.exit();
     }
 
+    public void openSettings(ActionEvent actionEvent) {
+        if (settingStage == null) {
+            createSettingWindow();
+            ClientService.setSettingController(settingController);
+        }
+        settingStage.show();
+
+    }
+
+
+    private void createSettingWindow() {
+        try {
+            FXMLLoader fxmlLoader3 = new FXMLLoader(ClientApp.class.getResource("settings.fxml"));
+            Parent root = fxmlLoader3.load();
+            settingStage = new Stage();
+            settingStage.setTitle("Settings");
+            settingStage.setScene(new Scene(root, 600, 300));
+            settingStage.initModality(Modality.APPLICATION_MODAL);
+            settingStage.initStyle(StageStyle.UTILITY);
+            settingController = fxmlLoader3.getController();
+            settingController.setController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Stage getSettingStage() {
+        return settingStage;
+    }
+    public void sendChangePasswordRequest(ChangePasswordRequest changePasswordRequest) {
+        network.sendFiles(changePasswordRequest);
+    }
 }

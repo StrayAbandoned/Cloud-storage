@@ -24,6 +24,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RemoteController implements Initializable, Controller {
     @FXML
+    private Button download;
+    @FXML
     private ContextMenu context;
     @FXML
     private TableView<FileInfo> remotefiles;
@@ -84,15 +86,18 @@ public class RemoteController implements Initializable, Controller {
 
     }
 
-    public void back(ActionEvent actionEvent) {
+
+    @FXML
+    private void back(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         network.sendFiles(new PathRequest("BACK"));
     }
 
-    public void downloadFile(ActionEvent actionEvent) {
+    @FXML
+    private void downloadFile(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
-        if (fileinfo != null && !fileinfo.getType().getName().equals("D")){
+        if (fileinfo != null && !fileinfo.isDirectory()){
             network.sendFiles(new DownloadRequest(fileinfo.getFileName()));
         }
     }
@@ -104,12 +109,13 @@ public class RemoteController implements Initializable, Controller {
         remotefiles.sort();
     }
 
-    public void copy(ActionEvent actionEvent) {
+    @FXML
+    private void copy(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
             ClientService.setServerMarker(true);
-            if (fileinfo.getType().getName().equals("D")) {
+            if (fileinfo.isDirectory()) {
                 network.sendFiles(new CopyRequest(fileinfo.getFileName(), RequestType.COPY_DIRECTORY));
                 ClientService.getLogger().info("COPY_DIR");
             } else {
@@ -119,12 +125,15 @@ public class RemoteController implements Initializable, Controller {
         }
     }
 
-    public void paste(ActionEvent actionEvent) {
+
+    @FXML
+    private void paste(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         network.sendFiles(new PasteRequest());
     }
 
-    public void delete(ActionEvent actionEvent) {
+    @FXML
+    private void delete(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
@@ -132,13 +141,14 @@ public class RemoteController implements Initializable, Controller {
         }
     }
 
+    @FXML
     public void rename(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
         oldName = fileinfo.getFileName();
         ClientService.setServerMarker(true);
         if (fileinfo != null) {
-            if (fileinfo.getType().getName().equals("D")) {
+            if (fileinfo.isDirectory()) {
                 resolution = null;
             } else {
                 resolution = fileinfo.getFileName().substring(fileinfo.getFileName().lastIndexOf('.'));
@@ -167,7 +177,8 @@ public class RemoteController implements Initializable, Controller {
         }
     }
 
-    public void createNewDirectory(ActionEvent actionEvent) {
+    @FXML
+    private void createNewDirectory(ActionEvent actionEvent) {
         network = ClientService.getNetwork();
         ClientService.setServerMarker(true);
         if (nameStage == null) {
@@ -193,11 +204,16 @@ public class RemoteController implements Initializable, Controller {
         }
     }
 
-    public void goToDirectory(MouseEvent mouseEvent) {
+    @FXML
+    private void goToDirectory(MouseEvent mouseEvent) {
         FileInfo fileInfo = remotefiles.getSelectionModel().getSelectedItem();
+        ClientService.getLocalController().getUpload().setDisable(true);
         network = ClientService.getNetwork();
+        if(fileInfo!=null&&!fileInfo.isDirectory()){
+            download.setDisable(false);
+        } else download.setDisable(true);
         if (mouseEvent.getClickCount() == 2 && fileInfo != null) {
-            if (fileInfo.getType().getName().equals("D")) {
+            if (fileInfo.isDirectory()) {
                 network.sendFiles(new PathRequest(fileInfo.getFileName()));
             }
 
@@ -223,5 +239,9 @@ public class RemoteController implements Initializable, Controller {
 
     public void setResolution(String resolution) {
         this.resolution = resolution;
+    }
+
+    public Button getDownload() {
+        return download;
     }
 }
