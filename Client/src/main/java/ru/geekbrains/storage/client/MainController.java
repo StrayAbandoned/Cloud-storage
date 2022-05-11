@@ -115,6 +115,7 @@ public class MainController implements Initializable, Controller {
 
     public void failAuth() {
         Alert alert = new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
+        alert.showAndWait();
     }
 
 

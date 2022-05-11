@@ -20,11 +20,9 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
     private final Server server;
     private String login;
-    private String[] str;
     private File directoryForCopy, fileForCopy;
-
+    private String path;
     private Path remoteRoot = Paths.get(System.getProperty("user.dir"));
-    final private int level = remoteRoot.getNameCount() + 3;
 
     MainHandler(Server server) {
         this.server = server;
@@ -46,6 +44,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             case AUTH -> {
                 if (server.getAuthentication().login((AuthRequest) msg)) {
                     login = server.getAuthentication().getLogin((AuthRequest) msg);
+                    path = login;
                     ctx.writeAndFlush(new AuthResponse(ResponseType.AUTH_OK, login));
                     Server.getLogger().info("Client logged in");
                 } else {
@@ -60,23 +59,27 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                         Server.getLogger().info("Directory created");
                     }
                     remoteRoot = dir.toPath();
-                    str = String.valueOf(remoteRoot).split("\\\\", level);
-                    ctx.writeAndFlush(new PathResponse(str[str.length - 1]));
+                    ctx.writeAndFlush(new PathResponse(path));
                 } else if (((PathRequest) request).getName().equals("BACK")) {
-                    if (remoteRoot.getNameCount() > level - 2) {
+                    Path p = Paths.get(path);
+                    if (p.getParent()!=null){
+                        path = String.valueOf(p.getParent());
                         remoteRoot = remoteRoot.getParent();
-                        str = String.valueOf(remoteRoot).split("\\\\", level - 1);
-                        ctx.writeAndFlush(new PathResponse(str[str.length - 1]));
+                        ctx.writeAndFlush(new PathResponse(path));
                     }
                 } else {
                     remoteRoot = remoteRoot.resolve(((PathRequest) request).getName());
-                    str = String.valueOf(remoteRoot).split("\\\\", level - 1);
-                    ctx.writeAndFlush(new PathResponse(str[str.length - 1]));
+                    Path p = Paths.get(path).resolve(((PathRequest) request).getName());
+                    path = String.valueOf(p);
+                    ctx.writeAndFlush(new PathResponse(path));
+//                    str = String.valueOf(remoteRoot).split("\\\\", level - 1);
+//                    ctx.writeAndFlush(new PathResponse(str[str.length - 1]));
                 }
             }
             case GET_FILES -> {
                 Server.getLogger().info("List requested");
-                GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]);
+                //GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]);
+                GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), path);
                 ctx.writeAndFlush(response);
 
             }
@@ -86,27 +89,29 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
             case COPY_FILE -> {
                 copyFile(((CopyRequest) request).getName());
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+//                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
 
             }
             case COPY_DIRECTORY -> {
                 copyDirectory(((CopyRequest) request).getName());
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                //ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
 
             }
             case PASTE -> {
                 paste();
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
 
             }
             case DELETE -> {
                 delete(((DeleteRequest) request).getFileName());
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
 
             }
             case RENAME -> {
                 rename(((RenameRequest) request).getOldName(), ((RenameRequest) request).getNewName());
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
 
             }
             case UPLOAD -> {
@@ -128,7 +133,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                     Server.getLogger().info("Directory created");
                     ctx.writeAndFlush(new NewFolderResponse());
                 }
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
+                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
 
             }
             case CHANGE_PASSWORD -> {

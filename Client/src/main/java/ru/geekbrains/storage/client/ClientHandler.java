@@ -27,8 +27,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             }
             case AUTH_NO -> {
                 ClientService.getMainController().setAuthenticated(false);
-                //Alert alert = new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
-                //ClientService.getMainController().failAuth();
+
+                ClientService.getMainController().failAuth();
             }
             case PATH, UPLOAD_NO, UPLOAD_OK -> ctx.writeAndFlush(new GetFilesRequest());
             case GET_FILES -> ClientService.getRemoteController().showRemoteFiles(((GetFilesResponse) response).getFiles(), ((GetFilesResponse) response).getPath());

@@ -11,13 +11,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.apache.commons.io.FileUtils;
 import ru.geekbrains.storage.FileInfo;
 import ru.geekbrains.storage.UploadRequest;
+import java.awt.Desktop;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +51,7 @@ public class LocalController implements Initializable, Controller {
     private Stage nameStage, renameStage;
     private RenameController renameController;
     private NameController nameController;
+    private final Desktop desktop = Desktop.isDesktopSupported()? Desktop.getDesktop():null;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -147,7 +148,6 @@ public class LocalController implements Initializable, Controller {
                 fileForCopy = null;
             }
         }
-        System.out.println(directoryForCopy);
     }
 
     public void goToDirectory(MouseEvent mouseEvent) {
@@ -159,6 +159,13 @@ public class LocalController implements Initializable, Controller {
         if (mouseEvent.getClickCount() == 2) {
             if (fileInfo.isDirectory()) {
                 getListOfFiles(Paths.get(localPath.getText()).resolve(fileInfo.getFileName()));
+            } else if( desktop!=null && desktop.isSupported(Desktop.Action.OPEN)){
+                try {
+                    desktop.open(new File(localPath.getText(), fileInfo.getFileName()));
+                } catch (IOException e) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to open file", ButtonType.OK);
+                    alert.showAndWait();
+                }
             }
         }
     }
@@ -259,7 +266,13 @@ public class LocalController implements Initializable, Controller {
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null && !fileinfo.isDirectory()) {
             File file = new File(String.valueOf(root), fileinfo.getFileName());
-            network.sendFiles(new UploadRequest(file));
+            try{
+                network.sendFiles(new UploadRequest(file));
+            }
+            catch (IOException e){
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to upload file", ButtonType.OK);
+                alert.showAndWait();
+            }
         }
     }
 

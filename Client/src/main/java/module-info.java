@@ -6,6 +6,7 @@ module ru.geekbrains.storage.client {
     requires ServiceMsg;
     requires java.logging;
     requires org.apache.commons.io;
+    requires java.desktop;
 
 
     opens ru.geekbrains.storage.client to javafx.fxml;

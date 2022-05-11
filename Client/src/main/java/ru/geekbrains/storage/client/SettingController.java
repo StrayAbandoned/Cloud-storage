@@ -29,9 +29,6 @@ public class SettingController implements Controller{
         String password = passOne.getText().trim();
         String confirmPassword = passTwo.getText().trim();
         if (password.isBlank()||confirmPassword.isBlank()||!password.equals(confirmPassword)) {
-            System.out.println(password.isBlank());
-            System.out.println(confirmPassword.isBlank());
-            System.out.println(!password.equals(confirmPassword));
             Alert alert = new Alert(Alert.AlertType.WARNING, "Passwords should be the same", ButtonType.OK);
             result.setText("Passwords should be the same");
         } else{

@@ -10,13 +10,13 @@ public class UploadRequest implements BasicRequest{
     String filename;
     byte [] data;
 
-    public UploadRequest(File file) {
+    public UploadRequest(File file) throws IOException {
         this.file=file;
         this.filename = file.getName();
         try {
             data = Files.readAllBytes(file.toPath());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IOException();
         }
     }
 
