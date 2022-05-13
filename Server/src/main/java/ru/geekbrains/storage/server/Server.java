@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 public class Server {
     private final static int PORT = 26894;
-    private final static int FILE_SIZE = 10_485_760;
+    private final static int FILE_SIZE = Integer.MAX_VALUE;
     private Authentication authentication;
 
     private final LogManager logManager = LogManager.getLogManager();

@@ -17,7 +17,7 @@ import ru.geekbrains.storage.BasicRequest;
 public class Network {
     private final int PORT = 26894;
     private final String HOSTNAME = "localhost";
-    private final int FILE_SIZE = 10_485_760;
+    private final int FILE_SIZE = Integer.MAX_VALUE;
     private Channel channel;
     private final Network network = this;
 

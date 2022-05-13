@@ -111,18 +111,13 @@ public class MainController implements Initializable, Controller {
         remotePanel.setVisible(authenticated);
         remotePanel.setManaged(authenticated);
         settings.setDisable(!authenticated);
-    }
 
-    public void failAuth() {
-        Alert alert = new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
-        alert.showAndWait();
     }
 
 
     public void backToAuthentication(ActionEvent actionEvent) {
-        ClientService.getNetwork().close();
         setAuthenticated(false);
-        Platform.exit();
+        network.sendFiles(new LogOutRequest());
     }
 
     public void openSettings(ActionEvent actionEvent) {

@@ -144,6 +144,15 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 }
 
             }
+            case LOGOUT -> {
+                login = null;
+                path = null;
+                directoryForCopy = null;
+                fileForCopy = null;
+                remoteRoot = Paths.get(System.getProperty("user.dir"));
+                Server.getLogger().info("Log out");
+
+            }
         }
     }
 
