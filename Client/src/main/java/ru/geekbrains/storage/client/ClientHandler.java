@@ -29,7 +29,11 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 ClientService.getMainController().setAuthenticated(false);
 
             }
-            case PATH, UPLOAD_NO, UPLOAD_OK -> ctx.writeAndFlush(new GetFilesRequest());
+            case PATH, UPLOAD_OK -> ctx.writeAndFlush(new GetFilesRequest());
+            case UPLOAD_NO -> {
+
+                ctx.writeAndFlush(new GetFilesRequest());
+            }
             case GET_FILES -> ClientService.getRemoteController().showRemoteFiles(((GetFilesResponse) response).getFiles(), ((GetFilesResponse) response).getPath());
             case NEW_FOLDER -> {
                 ClientService.getRemoteController().getNameStage().close();

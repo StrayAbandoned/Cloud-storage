@@ -1,6 +1,5 @@
 package ru.geekbrains.storage.client;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -207,14 +206,14 @@ public class LocalController implements Initializable, Controller {
                 resolution = null;
                 if (renameStage == null) {
                     createRenameWindow();
-                    ClientService.setrenameController(renameController);
+                    ClientService.setRenameController(renameController);
                 }
                 renameStage.show();
             } else {
                 resolution = fileinfo.getFileName().substring(fileinfo.getFileName().lastIndexOf('.'));
                 if (renameStage == null) {
                     createRenameWindow();
-                    ClientService.setrenameController(renameController);
+                    ClientService.setRenameController(renameController);
                 }
                 renameStage.show();
             }

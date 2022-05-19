@@ -32,7 +32,7 @@ public class Server {
         return ser;
     }
 
-    Server() throws FileNotFoundException, IOException {
+    Server() throws IOException {
         logManager.readConfiguration(new FileInputStream("Server/logging.properties"));
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();

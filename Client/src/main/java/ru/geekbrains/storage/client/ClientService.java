@@ -2,7 +2,6 @@ package ru.geekbrains.storage.client;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -61,7 +60,7 @@ public class ClientService {
         ClientService.nameController = nameController;
     }
 
-    public static void setrenameController(RenameController renameController) {
+    public static void setRenameController(RenameController renameController) {
         ClientService.renameController = renameController;
     }
 

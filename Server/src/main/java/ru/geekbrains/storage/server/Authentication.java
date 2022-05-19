@@ -44,6 +44,7 @@ public class Authentication {
             e.printStackTrace();
         }
     }
+
     public boolean registration(RegRequest regData) {
 
         try {
@@ -66,6 +67,7 @@ public class Authentication {
         }
         return false;
     }
+
     public boolean login(AuthRequest authData) {
 
         try {
@@ -74,7 +76,7 @@ public class Authentication {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 BCrypt.Result result = BCrypt.verifyer().verify(authData.getPassword().toCharArray(), rs.getString(2));
-                if(result.verified){
+                if (result.verified) {
                     return true;
                 }
 
@@ -85,7 +87,7 @@ public class Authentication {
         return false;
     }
 
-    public boolean changePassword(ChangePasswordRequest changePasswordRequest){
+    public boolean changePassword(ChangePasswordRequest changePasswordRequest) {
         try {
             PreparedStatement ps = connection.prepareStatement("SELECT login FROM users_data WHERE login = ?;");
             ps.setString(1, changePasswordRequest.getLogin());
@@ -109,20 +111,18 @@ public class Authentication {
         return authRequest.getLogin();
     }
 
-//    public String getPath(AuthRequest authRequest) throws SQLException {
-//        ResultSet rs = null;
-//        try {
-//            PreparedStatement ps3 = connection.prepareStatement("SELECT path FROM users_data WHERE login = ? AND password = ?;");
-//            ps3.setString(1, authRequest.getLogin());
-//            ps3.setString(2, authRequest.getPassword());
-//            rs = ps3.executeQuery();
-//            if (rs.next()) {
-//                rs.getString("path");
-//        }
-//        }catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return rs.getString("path");
-//    }
+    public String getQuota(String login) throws SQLException {
+        try {
+            PreparedStatement ps3 = connection.prepareStatement("SELECT quota FROM users_data WHERE login = ?;");
+            ps3.setString(1, login);
+            ResultSet rs = ps3.executeQuery();
+            if (rs.next()) {
+                return rs.getString("quota");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

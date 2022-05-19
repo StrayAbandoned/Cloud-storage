@@ -23,6 +23,8 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     private File directoryForCopy, fileForCopy;
     private String path;
     private Path remoteRoot = Paths.get(System.getProperty("user.dir"));
+    private long quota;
+    private long totalSize;
 
     MainHandler(Server server) {
         this.server = server;
@@ -45,6 +47,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 if (server.getAuthentication().login((AuthRequest) msg)) {
                     login = server.getAuthentication().getLogin((AuthRequest) msg);
                     path = login;
+
                     ctx.writeAndFlush(new AuthResponse(ResponseType.AUTH_OK, login));
                     Server.getLogger().info("Client logged in");
                 } else {
@@ -53,95 +56,135 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             case PATH -> {
-                if (((PathRequest) request).getName() == null) {
-                    File dir = new File(String.valueOf(remoteRoot), login);
-                    if (dir.mkdirs() && !dir.exists()) {
-                        Server.getLogger().info("Directory created");
-                    }
-                    remoteRoot = dir.toPath();
-                    ctx.writeAndFlush(new PathResponse(path));
-                } else if (((PathRequest) request).getName().equals("BACK")) {
-                    Path p = Paths.get(path);
-                    if (p.getParent()!=null){
-                        path = String.valueOf(p.getParent());
-                        remoteRoot = remoteRoot.getParent();
+                if(login!=null){
+
+                    if (((PathRequest) request).getName() == null) {
+                        File dir = new File(String.valueOf(remoteRoot), login);
+                        if (dir.mkdirs() && !dir.exists()) {
+                            Server.getLogger().info("Directory created");
+                        }
+                        remoteRoot = dir.toPath();
+                        totalSize = FileUtils.sizeOfDirectory(new File(System.getProperty("user.dir"), login));
+                        quota = Long.parseLong(server.getAuthentication().getQuota(login)) - totalSize;
+                        ctx.writeAndFlush(new PathResponse(path));
+                    } else if (((PathRequest) request).getName().equals("BACK")) {
+                        Path p = Paths.get(path);
+                        if (p.getParent()!=null){
+                            path = String.valueOf(p.getParent());
+                            remoteRoot = remoteRoot.getParent();
+                            ctx.writeAndFlush(new PathResponse(path));
+                        }
+                    } else {
+                        remoteRoot = remoteRoot.resolve(((PathRequest) request).getName());
+                        Path p = Paths.get(path).resolve(((PathRequest) request).getName());
+                        path = String.valueOf(p);
                         ctx.writeAndFlush(new PathResponse(path));
                     }
-                } else {
-                    remoteRoot = remoteRoot.resolve(((PathRequest) request).getName());
-                    Path p = Paths.get(path).resolve(((PathRequest) request).getName());
-                    path = String.valueOf(p);
-                    ctx.writeAndFlush(new PathResponse(path));
-//                    str = String.valueOf(remoteRoot).split("\\\\", level - 1);
-//                    ctx.writeAndFlush(new PathResponse(str[str.length - 1]));
                 }
+
             }
             case GET_FILES -> {
-                Server.getLogger().info("List requested");
-                //GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]);
-                GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), path);
-                ctx.writeAndFlush(response);
+                if(login!=null){
+                    Server.getLogger().info("List requested");
+                    GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), path);
+                    ctx.writeAndFlush(response);
+                }
+
 
             }
             case DOWNLOAD -> {
-                ctx.writeAndFlush(new DownloadResponse(new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName())));
+                if (login!=null){
+                    ctx.writeAndFlush(new DownloadResponse(new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName())));
+                }
+
 
             }
             case COPY_FILE -> {
-                copyFile(((CopyRequest) request).getName());
-//                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                if(login!=null){
+                    copyFile(((CopyRequest) request).getName());
+                    ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                }
+
 
             }
             case COPY_DIRECTORY -> {
-                copyDirectory(((CopyRequest) request).getName());
-                //ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), str[str.length - 1]));
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                if(login!=null){
+                    copyDirectory(((CopyRequest) request).getName());
+                    ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                }
+
 
             }
             case PASTE -> {
-                paste();
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                if(login!=null){
+                    paste();
+                    ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                }
+
 
             }
             case DELETE -> {
-                delete(((DeleteRequest) request).getFileName());
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                if(login!=null){
+                    delete(((DeleteRequest) request).getFileName());
+                    ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                    totalSize = FileUtils.sizeOfDirectory(new File(System.getProperty("user.dir"), login));
+                    quota = Long.parseLong(server.getAuthentication().getQuota(login)) - totalSize;
+                }
+
 
             }
             case RENAME -> {
-                rename(((RenameRequest) request).getOldName(), ((RenameRequest) request).getNewName());
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                if(login!=null){
+                    rename(((RenameRequest) request).getOldName(), ((RenameRequest) request).getNewName());
+                    ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+                }
+
 
             }
             case UPLOAD -> {
-                Server.getLogger().info("Uploading...");
-                String pathOfFile = String.format(remoteRoot + "\\%s", ((UploadRequest) request).getFilename());
-                try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
-                    fos.write(((UploadRequest) request).getData());
+                if(login!=null){
+                    String pathOfFile = String.format(remoteRoot + "\\%s", ((UploadRequest) request).getFilename());
+                    if(((UploadRequest) request).getSize()<=quota){
+                        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
+                            fos.write(((UploadRequest) request).getData());
+                        }
+                        totalSize = FileUtils.sizeOfDirectory(new File(System.getProperty("user.dir"), login));
+                        quota = Long.parseLong(server.getAuthentication().getQuota(login)) - totalSize;
+                    }
+
+                    if (new File(pathOfFile).exists()) {
+                        Server.getLogger().info("File uploaded");
+                        ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_OK));
+                    } else {
+                        Server.getLogger().info("Uploading denied");
+                        ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_NO));
+                    }
                 }
-                if (new File(pathOfFile).exists()) {
-                    ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_OK));
-                } else {
-                    ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_NO));
-                }
+
+
 
             }
             case NEW_REMOTE_FOLDER -> {
-                File dir = new File(String.valueOf(remoteRoot), ((NewFolderRequest) request).getName());
-                if (dir.mkdirs() && !dir.exists()) {
-                    Server.getLogger().info("Directory created");
-                    ctx.writeAndFlush(new NewFolderResponse());
+                if(login!=null){
+                    File dir = new File(String.valueOf(remoteRoot), ((NewFolderRequest) request).getName());
+                    if (dir.mkdirs() && !dir.exists()) {
+                        Server.getLogger().info("Directory created");
+                        ctx.writeAndFlush(new NewFolderResponse());
+                    }
+                    ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
                 }
-                ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
+
 
             }
             case CHANGE_PASSWORD -> {
-                if(server.getAuthentication().changePassword((ChangePasswordRequest) msg)){
-                    ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_OK));
-                } else{
-                    ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_NO));
+                if(login!=null){
+                    if(server.getAuthentication().changePassword((ChangePasswordRequest) msg)){
+                        ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_OK));
+                    } else{
+                        ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_NO));
+                    }
                 }
+
 
             }
             case LOGOUT -> {
@@ -149,6 +192,8 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 path = null;
                 directoryForCopy = null;
                 fileForCopy = null;
+                quota = 0L;
+                totalSize = 0L;
                 remoteRoot = Paths.get(System.getProperty("user.dir"));
                 Server.getLogger().info("Log out");
 

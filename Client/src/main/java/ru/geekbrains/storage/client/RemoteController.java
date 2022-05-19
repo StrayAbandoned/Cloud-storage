@@ -155,7 +155,7 @@ public class RemoteController implements Initializable, Controller {
             }
             if (renameStage == null) {
                 createRenameWindow();
-                ClientService.setrenameController(renameController);
+                ClientService.setRenameController(renameController);
             }
             renameStage.show();
         }

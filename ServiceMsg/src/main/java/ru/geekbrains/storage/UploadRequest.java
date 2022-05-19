@@ -9,10 +9,12 @@ public class UploadRequest implements BasicRequest{
     File file;
     String filename;
     byte [] data;
+    long size;
 
     public UploadRequest(File file) throws IOException {
         this.file=file;
         this.filename = file.getName();
+        size = file.length();
         try {
             data = Files.readAllBytes(file.toPath());
         } catch (IOException e) {
@@ -37,4 +39,7 @@ public class UploadRequest implements BasicRequest{
         return file;
     }
 
+    public long getSize() {
+        return size;
+    }
 }
