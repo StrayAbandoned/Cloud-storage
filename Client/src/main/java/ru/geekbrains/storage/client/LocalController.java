@@ -14,11 +14,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.apache.commons.io.FileUtils;
-import ru.geekbrains.storage.FileInfo;
-import ru.geekbrains.storage.UploadRequest;
+import ru.geekbrains.storage.*;
+
 import java.awt.Desktop;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -102,9 +103,9 @@ public class LocalController implements Initializable, Controller {
         disks.getSelectionModel().select(0);
 
 
-        getListOfFiles(root);
-        localfiles.setContextMenu(context);
 
+        localfiles.setContextMenu(context);
+        getListOfFiles(root);
     }
 
     public void getListOfFiles(Path rootPath) {
@@ -170,6 +171,7 @@ public class LocalController implements Initializable, Controller {
     }
 
     public void paste(ActionEvent actionEvent) {
+        upload.setDisable(true);
         if (fileForCopy != null) {
             try {
                 FileUtils.copyFile(fileForCopy, new File(String.valueOf(root), fileForCopy.getName()));
@@ -191,6 +193,7 @@ public class LocalController implements Initializable, Controller {
     }
 
     public void delete(ActionEvent actionEvent) {
+        upload.setDisable(true);
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
             FileUtils.deleteQuietly(new File(String.valueOf(root), fileinfo.getFileName()));
@@ -199,6 +202,7 @@ public class LocalController implements Initializable, Controller {
     }
 
     public void rename(ActionEvent actionEvent) {
+        upload.setDisable(true);
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
 
@@ -263,26 +267,53 @@ public class LocalController implements Initializable, Controller {
     public void uploadFile(ActionEvent actionEvent) {
         Network network = ClientService.getNetwork();
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
-        if (fileinfo != null && !fileinfo.isDirectory()) {
+        if(fileinfo != null && !fileinfo.isDirectory()){
             File file = new File(String.valueOf(root), fileinfo.getFileName());
-            try{
-                network.sendFiles(new UploadRequest(file));
-            }
-            catch (IOException e){
-                Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to upload file", ButtonType.OK);
-                alert.showAndWait();
-            }
+            FileDivide fileDivide = new FileDivide();
+            fileDivide.divide(Paths.get(String.valueOf(root), fileinfo.getFileName()), (bytes, lenBytes) -> {
+                FilePartRequest filePartRequest = new FilePartRequest(file.getName(), file.length(), bytes, lenBytes);
+                //filePartRequest.setPathToStr(pathToUploadFileStr);
+                network.sendFiles(filePartRequest);
+            });
         }
-    }
 
-    public void saveDownloadedFile(String filename, byte[] data) {
-        String pathOfFile = String.format(root + "\\%s", filename);
-        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
-            fos.write(data);
+        //return;
+//        if (fileinfo != null && !fileinfo.isDirectory()) {
+//            File file = new File(String.valueOf(root), fileinfo.getFileName());
+//            try{
+//                network.sendFiles(new UploadRequest(file));
+//            }
+//            catch (IOException e){
+//                Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to upload file", ButtonType.OK);
+//                alert.showAndWait();
+//            }
+//        }
+    }
+    public void saveDownloadedFiles(FilePartResponse filePartResponse) {
+        String pathOfFile = String.format(root + "\\%s", filePartResponse.getFileName());
+        long fileLength = filePartResponse.getFileLength();
+        byte[] partBytes = filePartResponse.getPartBytes();
+        int partBytesLen = filePartResponse.getPartBytesLen();
+        File file = new File(pathOfFile);
+        try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
+            outputStream.write(partBytes, 0, partBytesLen);
+            if (file.length() >= fileLength) {
+                getListOfFiles(root);
+            }
+    } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        getListOfFiles(root);
+
+//        public void saveDownloadedFile(String filename, byte[] data) {
+//        String pathOfFile = String.format(root + "\\%s", filename);
+//        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
+//            fos.write(data);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        getListOfFiles(root);
     }
 
     public String getResolution() {
@@ -290,6 +321,7 @@ public class LocalController implements Initializable, Controller {
     }
 
     public void renameFolder(String name) {
+        upload.setDisable(true);
         renameStage.close();
         FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
         String path = String.valueOf(root);
@@ -299,6 +331,7 @@ public class LocalController implements Initializable, Controller {
     }
 
     public void renameFile(String name) {
+        upload.setDisable(true);
         renameStage.close();
         FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
         String path = String.valueOf(root);
@@ -309,6 +342,7 @@ public class LocalController implements Initializable, Controller {
     }
 
     public void createFolder(String name) {
+        upload.setDisable(true);
         nameStage.close();
         String path = String.valueOf(root);
         File dir = new File(path, name);

@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 
-public class MainHandler extends ChannelInboundHandlerAdapter {
+public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     private final Server server;
     private String login;
@@ -26,7 +26,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     private long quota;
     private long totalSize;
 
-    MainHandler(Server server) {
+    ServerHandler(Server server) {
         this.server = server;
     }
 
@@ -94,7 +94,18 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
             case DOWNLOAD -> {
                 if (login!=null){
-                    ctx.writeAndFlush(new DownloadResponse(new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName())));
+                    File file = new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName());
+                    FileDivide fileDivide = new FileDivide();
+                    fileDivide.divide(Paths.get(String.valueOf(remoteRoot), ((DownloadRequest) request).getName()), (bytes, lenBytes) -> {
+                        FilePartResponse filePartRequest = new  FilePartResponse(file.getName(), file.length(), bytes, lenBytes);
+                        //filePartRequest.setPathToStr(pathToUploadFileStr);
+                        try {
+                            ctx.writeAndFlush(filePartRequest).sync();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    //ctx.writeAndFlush(new DownloadResponse(new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName())));
                 }
 
 
@@ -141,27 +152,52 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
 
             }
-            case UPLOAD -> {
+//            case UPLOAD -> {
+//                if(login!=null){
+//                    String pathOfFile = String.format(remoteRoot + "\\%s", ((UploadRequest) request).getFilename());
+//                    if(((UploadRequest) request).getSize()<=quota){
+//                        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
+//                            fos.write(((UploadRequest) request).getData());
+//                        }
+//                        totalSize = FileUtils.sizeOfDirectory(new File(System.getProperty("user.dir"), login));
+//                        quota = Long.parseLong(server.getAuthentication().getQuota(login)) - totalSize;
+//                    }
+//
+//                    if (new File(pathOfFile).exists()) {
+//                        Server.getLogger().info("File uploaded");
+//                        ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_OK));
+//                    } else {
+//                        Server.getLogger().info("Uploading denied");
+//                        ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_NO));
+//                    }
+//                }
+//
+//
+//
+//            }
+            case FILE_PART -> {
                 if(login!=null){
-                    String pathOfFile = String.format(remoteRoot + "\\%s", ((UploadRequest) request).getFilename());
-                    if(((UploadRequest) request).getSize()<=quota){
-                        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
-                            fos.write(((UploadRequest) request).getData());
+                    if(((FilePartRequest) request).getFileLength()<=quota){
+                        FilePartRequest filePartResponse = (FilePartRequest) request;
+                        long fileLength = filePartResponse.getFileLength();
+                        byte[] partBytes = filePartResponse.getPartBytes();
+                        int partBytesLen = filePartResponse.getPartBytesLen();
+                        Path pathToUploadFile = remoteRoot.resolve(filePartResponse.getFileName());
+                        File file = new File(String.valueOf(pathToUploadFile));
+                        try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
+                            outputStream.write(partBytes, 0, partBytesLen);
+                            if (file.length() >= fileLength) {
+                                if (new File(String.valueOf(pathToUploadFile)).exists()) {
+                                    Server.getLogger().info("File uploaded");
+                                    ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_OK));
+                                } else {
+                                    Server.getLogger().info("Uploading denied");
+                                    ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_NO));
+                                }
+                            }
                         }
-                        totalSize = FileUtils.sizeOfDirectory(new File(System.getProperty("user.dir"), login));
-                        quota = Long.parseLong(server.getAuthentication().getQuota(login)) - totalSize;
-                    }
-
-                    if (new File(pathOfFile).exists()) {
-                        Server.getLogger().info("File uploaded");
-                        ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_OK));
-                    } else {
-                        Server.getLogger().info("Uploading denied");
-                        ctx.writeAndFlush(new UploadResponse(ResponseType.UPLOAD_NO));
                     }
                 }
-
-
 
             }
             case NEW_REMOTE_FOLDER -> {

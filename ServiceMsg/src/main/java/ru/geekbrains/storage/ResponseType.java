@@ -9,5 +9,5 @@ public enum ResponseType implements Serializable {
     AUTH_NO,
     GET_FILES,
     UPLOAD_OK,
-    UPLOAD_NO, PATH, NEW_FOLDER, DOWNLOAD, CHANGE_OK, CHANGE_NO;
+    UPLOAD_NO, PATH, NEW_FOLDER, DOWNLOAD, CHANGE_OK, CHANGE_NO, FILE_PART;
 }

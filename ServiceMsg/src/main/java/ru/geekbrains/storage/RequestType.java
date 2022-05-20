@@ -16,5 +16,6 @@ public enum RequestType implements Serializable {
     RENAME,
     DOWNLOAD,
     CHANGE_PASSWORD,
-    LOGOUT;
+    LOGOUT,
+    FILE_PART;
 }

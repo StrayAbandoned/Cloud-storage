@@ -12,7 +12,6 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -48,7 +47,7 @@ public class Server {
                             socketChannel.pipeline().addLast(
                                     new ObjectDecoder(FILE_SIZE, ClassResolvers.weakCachingConcurrentResolver(Server.class.getClassLoader())),
                                     new ObjectEncoder(),
-                                    new MainHandler(getSer())
+                                    new ServerHandler(getSer())
                                     );
 
                         }

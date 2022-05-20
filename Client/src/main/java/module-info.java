@@ -7,6 +7,7 @@ module ru.geekbrains.storage.client {
     requires java.logging;
     requires org.apache.commons.io;
     requires java.desktop;
+    requires lombok;
 
 
     opens ru.geekbrains.storage.client to javafx.fxml;

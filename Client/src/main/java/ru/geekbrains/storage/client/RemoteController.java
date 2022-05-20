@@ -111,6 +111,7 @@ public class RemoteController implements Initializable, Controller {
 
     @FXML
     private void copy(ActionEvent actionEvent) {
+        download.setDisable(true);
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
@@ -128,12 +129,14 @@ public class RemoteController implements Initializable, Controller {
 
     @FXML
     private void paste(ActionEvent actionEvent) {
+        download.setDisable(true);
         network = ClientService.getNetwork();
         network.sendFiles(new PasteRequest());
     }
 
     @FXML
     private void delete(ActionEvent actionEvent) {
+        download.setDisable(true);
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
         if (fileinfo != null) {
@@ -143,6 +146,7 @@ public class RemoteController implements Initializable, Controller {
 
     @FXML
     public void rename(ActionEvent actionEvent) {
+        download.setDisable(true);
         network = ClientService.getNetwork();
         FileInfo fileinfo = remotefiles.getSelectionModel().getSelectedItem();
         oldName = fileinfo.getFileName();

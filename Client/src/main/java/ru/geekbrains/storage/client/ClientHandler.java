@@ -2,6 +2,7 @@ package ru.geekbrains.storage.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import ru.geekbrains.storage.*;
@@ -27,12 +28,23 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             }
             case AUTH_NO -> {
                 ClientService.getMainController().setAuthenticated(false);
+                Platform.runLater(()->{
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Wrong login/password", ButtonType.OK);
+                    alert.showAndWait();
+
+                });
 
             }
             case PATH, UPLOAD_OK -> ctx.writeAndFlush(new GetFilesRequest());
             case UPLOAD_NO -> {
 
                 ctx.writeAndFlush(new GetFilesRequest());
+                Platform.runLater(()->{
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Unable to upload file", ButtonType.OK);
+                    alert.showAndWait();
+
+                });
+
             }
             case GET_FILES -> ClientService.getRemoteController().showRemoteFiles(((GetFilesResponse) response).getFiles(), ((GetFilesResponse) response).getPath());
             case NEW_FOLDER -> {
@@ -40,8 +52,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 ClientService.setServerMarker(false);
                 ctx.writeAndFlush(new GetFilesRequest());
             }
-            case DOWNLOAD -> {
-                ClientService.getLocalController().saveDownloadedFile(((DownloadResponse) response).getFilename(), ((DownloadResponse) response).getData());
+
+            case FILE_PART -> {
+                ClientService.getLocalController().saveDownloadedFiles((FilePartResponse) response);
                 ctx.writeAndFlush(new GetFilesRequest());
             }
             case CHANGE_OK,CHANGE_NO ->{

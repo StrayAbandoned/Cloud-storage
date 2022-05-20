@@ -54,7 +54,11 @@ public class Network {
     }
 
     public void sendFiles(BasicRequest b){
-        channel.writeAndFlush(b);
+        try {
+            channel.writeAndFlush(b).sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
