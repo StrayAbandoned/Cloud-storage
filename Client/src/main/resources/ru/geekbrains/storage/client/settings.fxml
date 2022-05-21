@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.geekbrains.storage.client.SettingController"
+      alignment="CENTER"
+      spacing="20">
+
+    <HBox spacing="20">
+        <padding>
+            <Insets left="20" right="20"/>
+        </padding>
+        <Label text="Create new password" prefWidth="150"/>
+        <PasswordField fx:id="passOne" promptText="new password" HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <HBox spacing="20">
+        <padding>
+            <Insets left="20" right="20"/>
+        </padding>
+        <Label text="Confirm new password" prefWidth="150"/>
+        <PasswordField fx:id="passTwo" promptText="confirm new password" HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <Button fx:id="confirm" text="OK" prefWidth="80" onAction="#confirm">
+        <VBox.margin>
+            <Insets top="20.0"/>
+        </VBox.margin>
+    </Button>
+    <TextField fx:id="result" editable="false"/>
+</VBox>
