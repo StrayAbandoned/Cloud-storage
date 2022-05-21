@@ -28,22 +28,6 @@ public class Authentication {
         getLogger().info("Database connected");
     }
 
-    public void disconnectDB() {
-        try {
-            if (!stmt.isClosed()) {
-                stmt.close();
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        try {
-            connection.close();
-            Server.getLogger().info("Database disconnected");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
     public boolean registration(RegRequest regData) {
 
@@ -124,5 +108,40 @@ public class Authentication {
         }
         return null;
     }
+
+    public void setIdSession(String idSession, String login){
+        try {
+            PreparedStatement ps4 = connection.prepareStatement("SELECT id_session FROM users_data WHERE login = ?;");
+            ps4.setString(1, login);
+            System.out.println(idSession);
+            ResultSet rs = ps4.executeQuery();
+            if (rs.next()) {
+                PreparedStatement ps5 = connection.prepareStatement("UPDATE users_data SET id_session = ? WHERE login = ?;");
+                ps5.setString(1, idSession);
+                ps5.setString(2, login);
+                ps5.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public String getIdSession(String login){
+        try {
+            PreparedStatement ps6 = connection.prepareStatement("SELECT id_session FROM users_data WHERE login = ?;");
+            ps6.setString(1, login);
+            ResultSet rs = ps6.executeQuery();
+            if (rs.next()) {
+                return rs.getString("id_session");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
 
 }

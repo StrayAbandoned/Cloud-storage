@@ -2,7 +2,9 @@ package ru.geekbrains.storage.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.concurrent.BlockingOperationException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import ru.geekbrains.storage.*;
 
 import java.io.File;
@@ -25,6 +27,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     private Path remoteRoot = Paths.get(System.getProperty("user.dir"));
     private long quota;
     private long totalSize;
+    private String idSession;
 
     ServerHandler(Server server) {
         this.server = server;
@@ -47,6 +50,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                 if (server.getAuthentication().login((AuthRequest) msg)) {
                     login = server.getAuthentication().getLogin((AuthRequest) msg);
                     path = login;
+                    idSession = RandomStringUtils.random(7, true, true);
+                    server.getAuthentication().setIdSession(idSession, login);
 
                     ctx.writeAndFlush(new AuthResponse(ResponseType.AUTH_OK, login));
                     Server.getLogger().info("Client logged in");
@@ -56,7 +61,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             case PATH -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
 
                     if (((PathRequest) request).getName() == null) {
                         File dir = new File(String.valueOf(remoteRoot), login);
@@ -84,7 +89,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case GET_FILES -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     Server.getLogger().info("List requested");
                     GetFilesResponse response = new GetFilesResponse(showFiles(remoteRoot), path);
                     ctx.writeAndFlush(response);
@@ -93,25 +98,28 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case DOWNLOAD -> {
-                if (login!=null){
+                if (idSession.equals(server.getAuthentication().getIdSession(login))){
                     File file = new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName());
                     FileDivide fileDivide = new FileDivide();
-                    fileDivide.divide(Paths.get(String.valueOf(remoteRoot), ((DownloadRequest) request).getName()), (bytes, lenBytes) -> {
-                        FilePartResponse filePartRequest = new  FilePartResponse(file.getName(), file.length(), bytes, lenBytes);
-                        //filePartRequest.setPathToStr(pathToUploadFileStr);
-                        try {
-                            ctx.writeAndFlush(filePartRequest).sync();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                    //ctx.writeAndFlush(new DownloadResponse(new File(String.valueOf(remoteRoot), ((DownloadRequest) request).getName())));
+                    try{
+                        fileDivide.divide(Paths.get(String.valueOf(remoteRoot), ((DownloadRequest) request).getName()), (bytes, lenBytes) -> {
+                            try {
+                                ctx.writeAndFlush(new  FilePartResponse(file.getName(), file.length(), bytes, lenBytes)).sync();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+                    catch (BlockingOperationException e){
+
+                    }
+
                 }
 
 
             }
             case COPY_FILE -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     copyFile(((CopyRequest) request).getName());
                     ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
                 }
@@ -119,7 +127,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case COPY_DIRECTORY -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     copyDirectory(((CopyRequest) request).getName());
                     ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
                 }
@@ -127,7 +135,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case PASTE -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     paste();
                     ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
                 }
@@ -135,7 +143,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case DELETE -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     delete(((DeleteRequest) request).getFileName());
                     ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
                     totalSize = FileUtils.sizeOfDirectory(new File(System.getProperty("user.dir"), login));
@@ -145,7 +153,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case RENAME -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     rename(((RenameRequest) request).getOldName(), ((RenameRequest) request).getNewName());
                     ctx.writeAndFlush(new GetFilesResponse(showFiles(remoteRoot), path));
                 }
@@ -176,13 +184,13 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 //
 //            }
             case FILE_PART -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     if(((FilePartRequest) request).getFileLength()<=quota){
-                        FilePartRequest filePartResponse = (FilePartRequest) request;
-                        long fileLength = filePartResponse.getFileLength();
-                        byte[] partBytes = filePartResponse.getPartBytes();
-                        int partBytesLen = filePartResponse.getPartBytesLen();
-                        Path pathToUploadFile = remoteRoot.resolve(filePartResponse.getFileName());
+                        FilePartRequest filePartRequest = (FilePartRequest) request;
+                        long fileLength = filePartRequest.getFileLength();
+                        byte[] partBytes = filePartRequest.getPartBytes();
+                        int partBytesLen = filePartRequest.getPartBytesLen();
+                        Path pathToUploadFile = remoteRoot.resolve(filePartRequest.getFileName());
                         File file = new File(String.valueOf(pathToUploadFile));
                         try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
                             outputStream.write(partBytes, 0, partBytesLen);
@@ -201,7 +209,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case NEW_REMOTE_FOLDER -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     File dir = new File(String.valueOf(remoteRoot), ((NewFolderRequest) request).getName());
                     if (dir.mkdirs() && !dir.exists()) {
                         Server.getLogger().info("Directory created");
@@ -213,7 +221,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
             }
             case CHANGE_PASSWORD -> {
-                if(login!=null){
+                if(idSession.equals(server.getAuthentication().getIdSession(login))){
                     if(server.getAuthentication().changePassword((ChangePasswordRequest) msg)){
                         ctx.writeAndFlush(new ChangePasswordResponse(ResponseType.CHANGE_OK));
                     } else{
@@ -230,6 +238,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                 fileForCopy = null;
                 quota = 0L;
                 totalSize = 0L;
+                idSession = null;
                 remoteRoot = Paths.get(System.getProperty("user.dir"));
                 Server.getLogger().info("Log out");
 

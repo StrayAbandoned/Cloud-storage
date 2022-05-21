@@ -51,7 +51,7 @@ public class LocalController implements Initializable, Controller {
     private Stage nameStage, renameStage;
     private RenameController renameController;
     private NameController nameController;
-    private final Desktop desktop = Desktop.isDesktopSupported()? Desktop.getDesktop():null;
+    private final Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -103,7 +103,6 @@ public class LocalController implements Initializable, Controller {
         disks.getSelectionModel().select(0);
 
 
-
         localfiles.setContextMenu(context);
         getListOfFiles(root);
     }
@@ -153,13 +152,13 @@ public class LocalController implements Initializable, Controller {
     public void goToDirectory(MouseEvent mouseEvent) {
         FileInfo fileInfo = localfiles.getSelectionModel().getSelectedItem();
         ClientService.getRemoteController().getDownload().setDisable(true);
-        if(fileInfo!=null&&!fileInfo.isDirectory()){
+        if (fileInfo != null && !fileInfo.isDirectory()) {
             upload.setDisable(false);
         } else upload.setDisable(true);
         if (mouseEvent.getClickCount() == 2) {
             if (fileInfo.isDirectory()) {
                 getListOfFiles(Paths.get(localPath.getText()).resolve(fileInfo.getFileName()));
-            } else if( desktop!=null && desktop.isSupported(Desktop.Action.OPEN)){
+            } else if (desktop != null && desktop.isSupported(Desktop.Action.OPEN)) {
                 try {
                     desktop.open(new File(localPath.getText(), fileInfo.getFileName()));
                 } catch (IOException e) {
@@ -267,7 +266,7 @@ public class LocalController implements Initializable, Controller {
     public void uploadFile(ActionEvent actionEvent) {
         Network network = ClientService.getNetwork();
         FileInfo fileinfo = localfiles.getSelectionModel().getSelectedItem();
-        if(fileinfo != null && !fileinfo.isDirectory()){
+        if (fileinfo != null && !fileinfo.isDirectory()) {
             File file = new File(String.valueOf(root), fileinfo.getFileName());
             FileDivide fileDivide = new FileDivide();
             fileDivide.divide(Paths.get(String.valueOf(root), fileinfo.getFileName()), (bytes, lenBytes) -> {
@@ -289,31 +288,23 @@ public class LocalController implements Initializable, Controller {
 //            }
 //        }
     }
+
     public void saveDownloadedFiles(FilePartResponse filePartResponse) {
         String pathOfFile = String.format(root + "\\%s", filePartResponse.getFileName());
         long fileLength = filePartResponse.getFileLength();
         byte[] partBytes = filePartResponse.getPartBytes();
         int partBytesLen = filePartResponse.getPartBytesLen();
         File file = new File(pathOfFile);
+
         try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
             outputStream.write(partBytes, 0, partBytesLen);
             if (file.length() >= fileLength) {
                 getListOfFiles(root);
             }
-    } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-//        public void saveDownloadedFile(String filename, byte[] data) {
-//        String pathOfFile = String.format(root + "\\%s", filename);
-//        try (FileOutputStream fos = new FileOutputStream(pathOfFile)) {
-//            fos.write(data);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        getListOfFiles(root);
     }
 
     public String getResolution() {

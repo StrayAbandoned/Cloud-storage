@@ -55,7 +55,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
             case FILE_PART -> {
                 ClientService.getLocalController().saveDownloadedFiles((FilePartResponse) response);
-                ctx.writeAndFlush(new GetFilesRequest());
+                //ctx.writeAndFlush(new GetFilesRequest());
             }
             case CHANGE_OK,CHANGE_NO ->{
                 if(response.getType().equals(ResponseType.CHANGE_OK)){
